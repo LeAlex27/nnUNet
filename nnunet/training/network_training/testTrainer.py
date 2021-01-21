@@ -1,5 +1,5 @@
 from nnunet.training.network_training.nnUNetTrainerV2 import nnUNetTrainerV2
-from nnunet.training.loss_functions.focal_loss import WeightedFocalLoss
+from nnunet.training.loss_functions.focal_loss import FocalLoss
 
 
 class testTrainer(nnUNetTrainerV2):
@@ -9,4 +9,4 @@ class testTrainer(nnUNetTrainerV2):
                          deterministic, fp16)
         self.alpha = alpha
         self.gamma = gamma
-        self.loss = WeightedFocalLoss(alpha, gamma)
+        self.loss = FocalLoss(alpha, gamma)
