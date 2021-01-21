@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class FocalLoss(nn.Module):
     def __init__(self, alpha=.25, gamma=2):
         super(FocalLoss, self).__init__()
-        self.alpha = torch.tensor([alpha, 1 - alpha])  # .cuda()
+        self.alpha = torch.tensor([alpha, 1 - alpha]).cuda()
         self.gamma = gamma
 
     def forward(self, inputs, targets):
