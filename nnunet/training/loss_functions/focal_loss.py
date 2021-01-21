@@ -11,9 +11,14 @@ class WeightedFocalLoss(nn.Module):
         self.gamma = gamma
 
     def forward(self, inputs, targets):
+        print("inputs.shape()", inputs.shape())
+        print("targets.shape()", targets.shape())
         BCE_loss = F.binary_cross_entropy_with_logits(inputs[:, 1:], targets, reduction='none')
+        print("BCE_loss.shape()", BCE_loss.shape())
         targets = targets.type(torch.long)
         at = self.alpha.gather(0, targets.data.view(-1))
+        print("at.shape()", at.shape())
         pt = torch.exp(-BCE_loss)
+        print("pt.shape()", pt.shape())
         F_loss = at*(1-pt)**self.gamma * BCE_loss
         return F_loss.mean()
