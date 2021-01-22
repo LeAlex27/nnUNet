@@ -12,7 +12,7 @@ class FocalLoss(nn.Module):
     def forward(self, inputs, targets):
         # BCE(p, y) = -log(pt) => pt = exp(-BCE(p, y))
         #      loss = -log(pt) * at(1-pt)**g
-        # =>        = BCE(p, y) * at * (1 - pt)**g
+        # <=>       = BCE(p, y) * at * (1 - pt)**g
 
         BCE_loss = F.binary_cross_entropy_with_logits(inputs[:, 1:], targets, reduction='none')
 
