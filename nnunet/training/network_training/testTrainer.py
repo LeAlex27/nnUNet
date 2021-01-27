@@ -7,4 +7,4 @@ class testTrainer(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super().__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
-        self.loss = FocalLoss(0.1, 2.0)
+        self.loss = FocalLoss(0.25, 1.0)
