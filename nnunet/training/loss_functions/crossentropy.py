@@ -14,7 +14,7 @@ class RobustCrossEntropyLoss(nn.CrossEntropyLoss):
 
 class WeightedRobustCrossEntropyLoss(nn.CrossEntropyLoss):
     def __init__(self, weight):
-        super(WeightedRobustCrossEntropyLoss, self).__init__(weight=Tensor(weight))
+        super(WeightedRobustCrossEntropyLoss, self).__init__(weight=Tensor(weight).cuda())
     
     """
     this is just a compatibility layer because my target tensor is float and has an extra dimension
