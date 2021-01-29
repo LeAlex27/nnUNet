@@ -7,4 +7,4 @@ class bceTrainer(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super().__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
-        self.loss = WeightedRobustCrossEntropyLoss([0.1, 0.9])
+        self.loss = WeightedRobustCrossEntropyLoss([0.01, 0.99])
