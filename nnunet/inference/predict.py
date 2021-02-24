@@ -517,6 +517,7 @@ def predict_cases_fastest(model, list_of_lists, output_filenames, folds, num_thr
     # first load the postprocessing properties if they are present. Else raise a well visible warning
     results = []
     pp_file = join(model, "postprocessing.json")
+    print(pp_file)
     if isfile(pp_file):
         print("postprocessing...")
         shutil.copy(pp_file, os.path.dirname(output_filenames[0]))
