@@ -226,6 +226,7 @@ def predict_cases(model, list_of_lists, output_filenames, folds, save_npz, num_t
             softmax_mean = softmax_mean.transpose([0] + [i + 1 for i in transpose_backward])
 
         if save_npz:
+            print(output_filename[:-7] + ".npz")
             npz_file = output_filename[:-7] + ".npz"
         else:
             npz_file = None
