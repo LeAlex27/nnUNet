@@ -195,7 +195,7 @@ def predict_cases(model, list_of_lists, output_filenames, folds, save_npz, num_t
         interpolation_order = segmentation_export_kwargs['interpolation_order']
         interpolation_order_z = segmentation_export_kwargs['interpolation_order_z']
 
-    print("starting preprocessing generator")
+    print("starting preprocessing generator - predict cases")
     preprocessing = preprocess_multithreaded(trainer, list_of_lists, cleaned_output_files, num_threads_preprocessing,
                                              segs_from_prev_stage)
     print("starting prediction...")
@@ -338,7 +338,7 @@ def predict_cases_fast(model, list_of_lists, output_filenames, folds, num_thread
         interpolation_order = segmentation_export_kwargs['interpolation_order']
         interpolation_order_z = segmentation_export_kwargs['interpolation_order_z']
 
-    print("starting preprocessing generator")
+    print("starting preprocessing generator - fast")
     preprocessing = preprocess_multithreaded(trainer, list_of_lists, cleaned_output_files, num_threads_preprocessing,
                                              segs_from_prev_stage)
 
@@ -462,7 +462,7 @@ def predict_cases_fastest(model, list_of_lists, output_filenames, folds, num_thr
     print("loading parameters for folds,", folds)
     trainer, params = load_model_and_checkpoint_files(model, folds, mixed_precision=mixed_precision, checkpoint_name=checkpoint_name)
 
-    print("starting preprocessing generator")
+    print("starting preprocessing generator - fastest")
     preprocessing = preprocess_multithreaded(trainer, list_of_lists, cleaned_output_files, num_threads_preprocessing,
                                              segs_from_prev_stage)
 
