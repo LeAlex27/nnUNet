@@ -248,7 +248,8 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 del data
                 print("run iteration")
                 print("os:", output.shape)
-                print("ts:", target.shape)
+                print("ts:", len(target))
+                print(type(target[0]))
                 l = self.loss(output, target)
 
             if do_backprop:
