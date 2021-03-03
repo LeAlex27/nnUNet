@@ -29,7 +29,7 @@ class CountingUNet(Generic_UNet):
 
     def forward(self, x):
         x_0 = super(CountingUNet, self).forward(x)
-        print("x_0.shape:", x_0.shape)
+
         x = self.conv_0(x_0[:, 1:])
         x = self.relu_0(self.bn_0(x))
         x = self.conv_1(x)
@@ -41,5 +41,7 @@ class CountingUNet(Generic_UNet):
         x = self.conv_3(x)
         x = self.relu_3(self.bn_3(x))
         x_1 = self.pool_op_1(x)
+        print("x_0.shape:", x_0.shape)
+        print("x_1.shape:", x_1.shape)
 
         return x_0, x_1
