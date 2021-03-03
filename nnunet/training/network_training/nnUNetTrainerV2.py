@@ -246,6 +246,9 @@ class nnUNetTrainerV2(nnUNetTrainer):
             with autocast():
                 output = self.network(data)
                 del data
+                print("run iteration")
+                print("os:", output.shape)
+                print("ts:", target.shape)
                 l = self.loss(output, target)
 
             if do_backprop:
