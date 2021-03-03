@@ -41,17 +41,27 @@ class CountingDiceLoss(SoftDiceLoss):
 
     def forward(self, x, y, loss_mask=None):
         print("cdLoss:")
-        print("\tx.shape:", x.shape)
-        print("\ty.shape:", y.shape)
+        #print("\tx.shape:", x.shape)
+        #print("\ty.shape:", y.shape)
 
         dm = np.empty(y.shape)
         idxs = y.shape[0]
         y_cpu = y.cpu().numpy()
+        sums_gt = []
         for i in range(idxs):
             dm[i, 0] = sharpen(y_cpu[i, 0])
-        print("dm.shape:", dm.shape)
+            sums_gt.append(np.sum(dm[i, 0]))
+        #print("dm.shape:", dm.shape)
 
         y_ = torch.cat((y, torch.from_numpy(dm).cuda()), 1)
-        print("cat y_.shape", y_.shape)
+        #print("cat y_.shape", y_.shape)
 
-        return super(CountingDiceLoss, self).forward(x, y_)
+        x_cpu = x.cpu().numpy()
+        sums_pred = []
+        for i in range(idxs):
+            sums_pred.append(np.sum(x_cpu[i]))
+        ma_loss = 0.0001 * (np.asarray(sums_pred) - np.asarray(sums_gt)) ** 2
+        print(sums_gt)
+        print(sums_pred)
+
+        return super(CountingDiceLoss, self).forward(x, y_) + ma_loss
