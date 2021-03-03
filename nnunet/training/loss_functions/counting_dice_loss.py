@@ -67,4 +67,4 @@ class CountingDiceLoss(SoftDiceLoss):
         print(sums_gt)
         print(sums_pred)
 
-        return super(CountingDiceLoss, self).forward(x, y_) + ma_loss
+        return super(CountingDiceLoss, self).forward(x, y_) + ma_loss.gpu()
