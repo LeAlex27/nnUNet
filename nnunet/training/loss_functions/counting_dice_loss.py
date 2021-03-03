@@ -63,7 +63,7 @@ class CountingDiceLoss(SoftDiceLoss):
             #sums_pred.append(np.sum(x_cpu[i]))
             sums_pred[i] = torch.sum(x[i, 1])
 
-        ma_loss = 0.0001 * (sums_pred - sums_gt) ** 2
+        ma_loss = 0.0001 * torch.sum((sums_pred - sums_gt) ** 2)
         print("ma loss", ma_loss)
         print(sums_gt)
         print(sums_pred)
