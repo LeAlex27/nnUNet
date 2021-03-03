@@ -51,18 +51,19 @@ class CountingDiceLoss(SoftDiceLoss):
         for i in range(idxs):
             dm[i, 0] = sharpen(y_cpu[i, 0])
             sums_gt.append(np.sum(dm[i]))
+        sums_gt = torch.tensor(sums_gt)
         #print("dm.shape:", dm.shape)
 
         y_ = torch.cat((y, torch.from_numpy(dm).cuda()), 1)
         #print("cat y_.shape", y_.shape)
 
         #x_cpu = x.cpu().numpy()
-        sums_pred = []
+        sums_pred = torch.tensor([0 for _ in range(idxs)])
         for i in range(idxs):
             #sums_pred.append(np.sum(x_cpu[i]))
-            sums_pred.append(torch.sum(x[i, 1]).cpu().numpy())
-        print(sums_pred[0])
-        ma_loss = 0.0001 * (np.asarray(sums_pred) - np.asarray(sums_gt)) ** 2
+            sums_pred[i] = torch.sum(x[i, 1])
+
+        ma_loss = 0.0001 * (sums_pred - sums_gt) ** 2
         print(sums_gt)
         print(sums_pred)
 
