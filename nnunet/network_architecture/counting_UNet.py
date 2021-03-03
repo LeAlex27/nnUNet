@@ -44,4 +44,4 @@ class CountingUNet(Generic_UNet):
         print("x_0.shape:", x_0.shape)
         print("x_1.shape:", x_1.shape)
 
-        return x_0, x_1
+        return [x_0, x_1]
