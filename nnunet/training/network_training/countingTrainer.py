@@ -5,6 +5,7 @@ from nnunet.training.loss_functions.crossentropy import RobustCrossEntropyLoss
 from nnunet.network_architecture.counting_UNet import CountingUNet
 from nnunet.network_architecture.initialization import InitWeights_He
 from nnunet.utilities.nd_softmax import softmax_helper
+from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
 
 
 class CountingTrainer(nnUNetTrainerV2):
@@ -12,7 +13,7 @@ class CountingTrainer(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super().__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
-        self.loss = RobustCrossEntropyLoss()
+        self.loss = CountingDiceLoss()
 
     def initialize_network(self):
         """
