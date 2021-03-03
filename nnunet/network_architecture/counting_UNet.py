@@ -16,7 +16,7 @@ class CountingUNet(Generic_UNet):
         self.relu_0 = nn.LeakyReLU(**nonlin_kwargs)
         self.conv_1 = nn.Conv2d(4, 8, **conv_kwargs)
         self.bn_1 = nn.BatchNorm2d(8, **norm_op_kwargs)
-        self.relu_1 = nn.LeakyReLU(8, **nonlin_kwargs)
+        self.relu_1 = nn.LeakyReLU(**nonlin_kwargs)
         self.pool_op_0 = nn.MaxPool2d(2)
 
         self.conv_2 = nn.Conv2d(8, 16, **conv_kwargs)
@@ -24,7 +24,7 @@ class CountingUNet(Generic_UNet):
         self.relu_2 = nn.LeakyReLU(**nonlin_kwargs)
         self.conv_3 = nn.Conv2d(16, 32, **conv_kwargs)
         self.bn_3 = nn.BatchNorm2d(**norm_op_kwargs)
-        self.relu_3 = nn.LeakyReLU(32, **nonlin_kwargs)
+        self.relu_3 = nn.LeakyReLU(**nonlin_kwargs)
         self.pool_op_0 = nn.MaxPool2d(2)
 
     def forward(self, x):
