@@ -23,7 +23,7 @@ class CountingUNet(Generic_UNet):
         self.bn_2 = nn.BatchNorm2d(16, **norm_op_kwargs)
         self.relu_2 = nn.LeakyReLU(**nonlin_kwargs)
         self.conv_3 = nn.Conv2d(16, 32, **conv_kwargs)
-        self.bn_3 = nn.BatchNorm2d(**norm_op_kwargs)
+        self.bn_3 = nn.BatchNorm2d(32, **norm_op_kwargs)
         self.relu_3 = nn.LeakyReLU(**nonlin_kwargs)
         self.pool_op_0 = nn.MaxPool2d(2)
 
