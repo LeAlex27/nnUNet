@@ -30,7 +30,7 @@ class CountingUNet(Generic_UNet):
     def forward(self, x):
         x_0 = super(CountingUNet, self).forward(x)
         print("x_0.shape:", x_0.shape)
-        x = self.conv_0(x_0[:, 1])
+        x = self.conv_0(x_0[:, 1:])
         x = self.relu_0(self.bn_0(x))
         x = self.conv_1(x)
         x = self.relu_1(self.bn_1(x))
