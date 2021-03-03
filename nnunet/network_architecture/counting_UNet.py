@@ -25,7 +25,7 @@ class CountingUNet(Generic_UNet):
         self.conv_3 = nn.Conv2d(16, 32, **conv_kwargs)
         self.bn_3 = nn.BatchNorm2d(32, **norm_op_kwargs)
         self.relu_3 = nn.LeakyReLU(**nonlin_kwargs)
-        self.pool_op_0 = nn.MaxPool2d(2)
+        self.pool_op_1 = nn.MaxPool2d(2)
 
     def forward(self, x):
         x_0 = super(CountingUNet, self).forward(x)
