@@ -64,7 +64,10 @@ class CountingDiceLoss(SoftDiceLoss):
             sums_pred[i] = torch.sum(x[i, 1])
 
         ma_loss = 0.0001 * (sums_pred - sums_gt) ** 2
+        print("ma loss", ma_loss)
         print(sums_gt)
         print(sums_pred)
+        sl = super(CountingDiceLoss, self).forward(x, y_)
+        print("sl:", sl)
 
-        return super(CountingDiceLoss, self).forward(x, y_) + ma_loss.cuda()
+        return sl + ma_loss.cuda()
