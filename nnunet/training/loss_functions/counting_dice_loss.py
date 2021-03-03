@@ -49,7 +49,7 @@ class CountingDiceLoss(SoftDiceLoss):
         for i in range(idxs):
             dm[i] = sharpen(y[i, 0].cpu().numpy())
 
-        y = torch.cat((y, torch.from_numpy(dm)), 1)
+        y = torch.cat((y, torch.from_numpy(dm).cuda()), 1)
         print("cat y.shape", y.shape)
 
         return SoftDiceLoss(x, y)
