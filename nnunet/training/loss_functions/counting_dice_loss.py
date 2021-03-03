@@ -47,7 +47,7 @@ class CountingDiceLoss(SoftDiceLoss):
         dm = np.empty(x.shape)
         idxs = y.shape[0]
         for i in range(idxs):
-            dm[i] = sharpen(y[i, 0].numpy())
+            dm[i] = sharpen(y[i, 0].cpu().numpy())
 
         y = torch.cat((y, torch.from_numpy(dm)), 1)
         print("cat y.shape", y.shape)
