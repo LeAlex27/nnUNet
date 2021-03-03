@@ -54,4 +54,4 @@ class CountingDiceLoss(SoftDiceLoss):
         y_ = torch.cat((y, torch.from_numpy(dm).cuda()), 1)
         print("cat y_.shape", y_.shape)
 
-        return SoftDiceLoss.forward(x, y_)
+        return super(CountingDiceLoss, self).forward(x, y_)
