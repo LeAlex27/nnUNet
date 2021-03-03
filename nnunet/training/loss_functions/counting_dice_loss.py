@@ -44,7 +44,7 @@ class CountingDiceLoss(SoftDiceLoss):
         print("\tx.shape:", x.shape)
         print("\ty.shape:", y.shape)
 
-        dm = np.empty(x.shape)
+        dm = np.empty(y.shape)
         idxs = y.shape[0]
         y_cpu = y.cpu().numpy()
         for i in range(idxs):
