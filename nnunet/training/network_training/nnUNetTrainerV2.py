@@ -247,12 +247,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 output = self.network(data)
                 del data
                 print("run iteration")
-                print("os:", len(output))
-                for o in output:
-                    print(o.shape)
-                print("ts:", len(target))
-                for t in target:
-                    print(t.shape)
+                print("self.loss", self.loss)
                 l = self.loss(output, target)
                 print("loss", l)
 
