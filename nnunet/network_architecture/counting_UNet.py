@@ -48,8 +48,8 @@ class CountingUNet(Generic_UNet):
         #print("x_0.shape:", x_0.shape)
         #print("x_1.shape:", x_1.shape)
 
-        print("x.shape:", x.shape)
+        #print("x.shape:", x.shape)
         x = torch.cat((softmax_helper(x[:, :2])[:, :1],
                       x[:, 2:]), 1)
 
-        return [x]
+        return x

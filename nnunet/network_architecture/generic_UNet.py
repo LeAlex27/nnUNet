@@ -402,7 +402,7 @@ class Generic_UNet(SegmentationNetwork):
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
         if self._deep_supervision and self.do_ds:
-            print("generic_UNet.py:405")
+            # print("generic_UNet.py:405")
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
         else:
