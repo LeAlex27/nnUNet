@@ -401,11 +401,14 @@ class Generic_UNet(SegmentationNetwork):
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
+        print("self._deep_supervision:", self._deep_supervision)
+        print("self.do_ds:", self.do_ds)
         if self._deep_supervision and self.do_ds:
+            print("generic_UNet.py:406")
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
         else:
-            print("generic_UNet.py:408")
+            print("generic_UNet.py:410")
             print("type(seg_outputs[-1])", type(seg_outputs[-1]))
             return seg_outputs[-1]
 
