@@ -40,7 +40,7 @@ class CountingTrainer(nnUNetTrainerV2):
                    'num_classes': self.num_classes, 'num_pool': net_numpool, 'num_conv_per_stage': self.conv_per_stage,
                    'feat_map_mul_on_downscale': 2, 'conv_op': conv_op, 'norm_op': norm_op,
                    'norm_op_kwargs': norm_op_kwargs, 'dropout_op': dropout_op, 'dropout_op_kwargs': dropout_op_kwargs,
-                   'nonlin': net_nonlin, 'nonlin_kwargs': net_nonlin_kwargs, 'deep_supervision': False,
+                   'nonlin': net_nonlin, 'nonlin_kwargs': net_nonlin_kwargs, 'deep_supervision': True,
                    'dropout_in_localization': False, 'final_nonlin': lambda x: x,
                    'weightInitializer': InitWeights_He(1e-2), 'pool_op_kernel_sizes': self.net_num_pool_op_kernel_sizes,
                    'conv_kernel_sizes': self.net_conv_kernel_sizes, 'upscale_logits': False,
