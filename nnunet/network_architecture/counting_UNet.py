@@ -49,8 +49,10 @@ class CountingUNet(Generic_UNet):
         #print("x_1.shape:", x_1.shape)
 
         #print("x.shape:", x.shape)
+        print("counting_UNet.py:52")
         print(len(x))
-        print(x)
+        for i in x:
+            print(i.shape)
         x = torch.cat((softmax_helper(x[:, :2])[:, :1],
                       x[:, 2:]), 1)
 
