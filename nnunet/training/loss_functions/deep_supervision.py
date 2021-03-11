@@ -34,9 +34,9 @@ class MultipleOutputLoss2(nn.Module):
         assert isinstance(y, (tuple, list)), "y must be either tuple or list"
 
         for i in x:
-            print("x", x.shape)
+            print("x", i.shape)
         for i in y:
-            print("y", y.shape)
+            print("y", i.shape)
 
         if self.weight_factors is None:
             weights = [1] * len(x)
