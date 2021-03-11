@@ -248,6 +248,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 del data
                 print("run iteration")
                 print("self.loss", self.loss)
+                print("type(output):", type(output))
                 l = self.loss(output, target)
                 print("loss", l)
 
