@@ -41,6 +41,7 @@ class CountingDiceLoss(SoftDiceLoss):
 
     def forward(self, x, y, loss_mask=None):
         print("cdLoss:")
+        print(len(x), len(y))
         for i in x:
             print(i.shape)
         for i in y:
