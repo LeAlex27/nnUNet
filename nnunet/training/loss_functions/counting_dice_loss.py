@@ -51,10 +51,10 @@ class CountingDiceLoss(torch.nn.Module):
         return labels, props
 
     @staticmethod
-    def sharpen(self, img):
+    def sharpen(img):
         t = np.zeros_like(img)
 
-        labels, props = self.labels_and_props(img)
+        labels, props = CountingDiceLoss.labels_and_props(img)
 
         srpi = np.sqrt(2 * np.pi)
         s = 2.0
