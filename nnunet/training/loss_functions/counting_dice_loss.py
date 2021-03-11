@@ -25,7 +25,7 @@ class CountingDiceLoss(torch.nn.Module):
 
         # create gt density map
         y_cpu = y.cpu().numpy()
-        dm = np.empty_like(y)
+        dm = np.empty_like(y_cpu)
         dm[0] = self.sharpen(y_cpu[0])
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
