@@ -53,7 +53,7 @@ class CountingUNet(Generic_UNet):
         print(len(x))
         for i in x:
             print(i.shape)
-        x = torch.cat((softmax_helper(x[:, :2])[:, :1],
-                      x[:, 2:]), 1)
+        #x = torch.cat((softmax_helper(x[:, :2])[:, :1],
+        #              x[:, 2:]), 1)
 
         return x
