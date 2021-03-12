@@ -30,7 +30,7 @@ class CountingDiceLoss(torch.nn.Module):
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
 
-        l_ = self.loss(x[:, -1], y) #, loss_mask=loss_mask)
+        l_ = self.loss(x[:, :-1], y) #, loss_mask=loss_mask)
         print("loss:", l_)
         print(x[:, -1:].shape, dm.shape)
         l_ += self.loss_density_map(x[:, -1:], dm)
