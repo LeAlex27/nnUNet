@@ -9,7 +9,7 @@ from nnunet.utilities.nd_softmax import softmax_helper
 
 
 class CountingDiceLoss(torch.nn.Module):
-    def __init__(self, alpha=0.001):
+    def __init__(self, alpha=0.01):
         super(CountingDiceLoss, self).__init__()
         self.alpha = alpha
         self.loss = DC_and_CE_loss({'batch_dice': False, 'smooth': 1e-5, 'do_bg': False}, {})
