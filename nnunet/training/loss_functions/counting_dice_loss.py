@@ -31,16 +31,17 @@ class CountingDiceLoss(torch.nn.Module):
         y_n_ma = torch.sum(dm)
 
         l_ = self.loss(x[:, :-1], y) #, loss_mask=loss_mask)
-        print("loss:", l_)
-        print(x[:, -1:].shape, dm.shape)
-        l_ += self.loss_density_map(x[:, -1:], dm)
-        print("loss + dm:", l_)
+        return l_
+        #print("loss:", l_)
+        #print(x[:, -1:].shape, dm.shape)
+        #l_ += self.loss_density_map(x[:, -1:], dm)
+        #print("loss + dm:", l_)
 
-        x_n_ma = torch.sum(x[:, -1:])
-        l_ += self.alpha * (y_n_ma - x_n_ma) ** 2
-        print("loss + dm + n_ma:", l_)
+        #x_n_ma = torch.sum(x[:, -1:])
+        #l_ += self.alpha * (y_n_ma - x_n_ma) ** 2
+        #print("loss + dm + n_ma:", l_)
 
-        print("n_ma x & y:", x_n_ma, y_n_ma)
+        #print("n_ma x & y:", x_n_ma, y_n_ma)
 
         return l_
 
