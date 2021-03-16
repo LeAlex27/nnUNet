@@ -17,10 +17,6 @@ class CountingDiceLoss(torch.nn.Module):
 
     def forward(self, x, y, loss_mask=None):
         print("cdLoss:")
-        for i in x:
-            print(i.shape)
-        for i in y:
-            print(i.shape)
 
         # create gt density map
         y_cpu = y.cpu().numpy()
@@ -35,6 +31,8 @@ class CountingDiceLoss(torch.nn.Module):
         #print("loss:", l_)
         #print(x[:, -1:].shape, dm.shape)
         #l_ += self.loss_density_map(x[:, -1:], dm)
+        print("sum x:", torch.sum(x[:, -1:]))
+        print("sum dm:", torch.sum(dm))
         l_ = self.loss_density_map(x[:, -1:], dm)
         print("loss + dm:", l_)
 
