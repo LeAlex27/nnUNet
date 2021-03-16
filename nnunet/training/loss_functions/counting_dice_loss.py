@@ -4,7 +4,7 @@ import torch
 from skimage.morphology import label
 from skimage.measure import regionprops
 from nnunet.training.loss_functions.dice_loss import SoftDiceLoss
-from nnunet.training.loss_functions.dice_loss import DC_and_CE_loss
+from nnunet.training.loss_functions.crossentropy import RobustCrossEntropyLoss
 from nnunet.utilities.nd_softmax import softmax_helper
 
 
@@ -13,7 +13,8 @@ class CountingDiceLoss(torch.nn.Module):
         super(CountingDiceLoss, self).__init__()
         self.alpha = alpha
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
-        self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
+        # self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
+        self.loss_density_map = RobustCrossEntropyLoss()
 
     def forward(self, x, y, loss_mask=None):
         print("cdLoss:")
