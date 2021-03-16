@@ -14,7 +14,7 @@ class CountingTrainer(nnUNetTrainerV2):
         super().__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
         self.loss = CountingDiceLoss()
-        # self.max_num_epochs = 2
+        self.max_num_epochs = 100
 
     def initialize_network(self):
         """
