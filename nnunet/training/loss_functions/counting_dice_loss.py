@@ -12,7 +12,7 @@ class CountingDiceLoss(torch.nn.Module):
     def __init__(self, alpha=0.01):
         super(CountingDiceLoss, self).__init__()
         self.alpha = alpha
-        self.loss = SoftDiceLoss({'batch_dice': False, 'smooth': 1e-5, 'do_bg': False}, {})
+        self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
         self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
 
     def forward(self, x, y, loss_mask=None):
