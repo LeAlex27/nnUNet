@@ -29,14 +29,8 @@ class MultipleOutputLoss2(nn.Module):
         self.loss = loss
 
     def forward(self, x, y):
-        print("deep_supervision.py:32")
         assert isinstance(x, (tuple, list)), "x must be either tuple or list"
         assert isinstance(y, (tuple, list)), "y must be either tuple or list"
-
-        for i in x:
-            print("x", i.shape)
-        for i in y:
-            print("y", i.shape)
 
         if self.weight_factors is None:
             weights = [1] * len(x)

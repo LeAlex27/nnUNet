@@ -14,11 +14,11 @@ class CountingDiceLoss(torch.nn.Module):
         self.alpha = alpha
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
         # self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
-        #self.loss_density_map = RobustCrossEntropyLoss()
         self.loss_density_map = torch.nn.MSELoss()
+        self.loss_n_ma = torch.nn.MSELoss()
 
     def forward(self, x, y, loss_mask=None):
-        print("cdLoss:")
+        print("counting_dice_loss.py:22")
 
         # create gt density map
         y_cpu = y.cpu().numpy()
@@ -27,25 +27,19 @@ class CountingDiceLoss(torch.nn.Module):
             dm[i, 0] = self.sharpen(y_cpu[i, 0])
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
-
-        l_ = self.loss(x[:, :-1], y) #, loss_mask=loss_mask)
-        print("loss:", l_)
+        x_n_ma = torch.sum(x[:, -1:])
 
         print("sum x:", torch.sum(x[:, -1:]))
         print("sum dm:", y_n_ma)
-        print(x[:, -1:].shape, dm.shape)
-        t = self.loss_density_map(x[:, -1:], dm)
-        print("t:", t)
-        l_ += t
-        print("loss + dm:", l_)
 
-        #x_n_ma = torch.sum(x[:, -1:])
-        #l_ += self.alpha * (y_n_ma - x_n_ma) ** 2
-        #print("loss + dm + n_ma:", l_)
+        l_ = self.loss(x[:, :-1], y) #, loss_mask=loss_mask)
+        print("l_:", l_)
+        l_dm = self.loss_density_map(x[:, -1:], dm)
+        print("l_dm:", l_dm)
+        l_n = self.loss_n_ma(x_n_ma, y_n_ma)
+        print("l_n:", l_n)
 
-        #print("n_ma x & y:", x_n_ma, y_n_ma)
-
-        return l_
+        return l_ + l_dm
 
     @staticmethod
     def labels_and_props(img):
