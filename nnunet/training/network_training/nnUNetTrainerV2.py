@@ -246,11 +246,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
             with autocast():
                 output = self.network(data)
                 del data
-                print("run iteration")
-                print("self.loss", self.loss)
-                print("type(output):", type(output))
                 l = self.loss(output, target)
-                print("loss", l)
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
