@@ -15,7 +15,7 @@ class CountingDiceLoss(torch.nn.Module):
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
         # self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
         #self.loss_density_map = RobustCrossEntropyLoss()
-        self.loss_density_map = torch.nn.CrossEntropyLoss()
+        self.loss_density_map = torch.nn.MSELoss()
 
     def forward(self, x, y, loss_mask=None):
         print("cdLoss:")
