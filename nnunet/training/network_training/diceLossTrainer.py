@@ -10,3 +10,4 @@ class diceLossTrainer(nnUNetTrainerV2):
                          deterministic, fp16)
         soft_dice_kwargs = {'batch_dice': self.batch_dice, 'smooth': 1e-5, 'do_bg': False}
         self.loss = SoftDiceLoss(apply_nonlin=softmax_helper, **soft_dice_kwargs)
+        self.epoch = 400
