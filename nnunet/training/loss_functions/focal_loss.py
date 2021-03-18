@@ -10,11 +10,12 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
 
     def forward(self, inputs, targets):
-        print("FL shapes:", inputs, targets)
+        # print("FL shapes:", inputs.shape, targets.shape)
         # BCE(p, y) = -log(pt) => pt = exp(-BCE(p, y))
         #      loss = -log(pt) * at(1-pt)**g
         # <=>       = BCE(p, y) * at * (1 - pt)**g
 
+        # BCE_loss = F.binary_cross_entropy_with_logits(inputs[:, 1:], targets, reduction='none')
         BCE_loss = F.binary_cross_entropy_with_logits(inputs[:, 1:], targets, reduction='none')
 
         targets = targets.type(torch.long)
