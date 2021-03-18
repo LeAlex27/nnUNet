@@ -10,6 +10,7 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
 
     def forward(self, inputs, targets):
+        print("FL shapes:", inputs, targets)
         # BCE(p, y) = -log(pt) => pt = exp(-BCE(p, y))
         #      loss = -log(pt) * at(1-pt)**g
         # <=>       = BCE(p, y) * at * (1 - pt)**g
