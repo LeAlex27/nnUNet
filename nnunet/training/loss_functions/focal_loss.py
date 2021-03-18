@@ -15,6 +15,7 @@ class FocalLoss(nn.Module):
         #      loss = -log(pt) * at(1-pt)**g
         # <=>       = BCE(p, y) * at * (1 - pt)**g
 
+        # the upper line is important
         # BCE_loss = F.binary_cross_entropy_with_logits(inputs[:, 1:], targets, reduction='none')
         BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
 
