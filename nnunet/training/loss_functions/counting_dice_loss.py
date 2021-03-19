@@ -38,7 +38,7 @@ class CountingDiceLoss(torch.nn.Module):
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
         print("l_n:", l_n)
 
-        return l_ + l_dm + 0.001 * l_n
+        return l_dm # l_ + l_dm + 0.001 * l_n
 
     @staticmethod
     def labels_and_props(img):
