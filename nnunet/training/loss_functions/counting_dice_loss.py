@@ -47,7 +47,7 @@ class CountingDiceLoss(torch.nn.Module):
     def save_img(self, img, fname):
         fig, ax = plt.subplots(1, img.shape[0], figsize=(10 * img.shape[0],  10))
         for i in range(img.shape[0]):
-            img[i].imshow(img[i, 0])
+            ax[i].imshow(img[i, 0])
         fig.savefig(fname.format(self.n, img.shape[2]))
         self.n += 1
 
