@@ -5,6 +5,8 @@ from skimage.morphology import label
 from skimage.measure import regionprops
 from nnunet.training.loss_functions.dice_loss import SoftDiceLoss
 from nnunet.training.loss_functions.focal_loss import FocalLoss
+from nnunet.training.loss_functions.crossentropy import RobustCrossEntropyLoss
+from nnunet.training.loss_functions.crossentropy import WeightedRobustCrossEntropyLoss
 from nnunet.utilities.nd_softmax import softmax_helper
 import matplotlib.pyplot as plt
 
@@ -13,32 +15,30 @@ class CountingDiceLoss(torch.nn.Module):
     def __init__(self, alpha=0.01):
         super(CountingDiceLoss, self).__init__()
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
-        self.loss_density_map = torch.nn.MSELoss()
+        self.loss_density_map = RobustCrossEntropyLoss()
         self.loss_n_ma = torch.nn.MSELoss()
         self.n = 0
 
     def forward(self, x, y, loss_mask=None):
         print("counting_dice_loss.py:22")
-        print("xs, ys:", x.shape, y.shape)
 
         # create gt density map
         y_cpu = y.cpu().numpy()
         dm = np.empty_like(y_cpu[:, 0:1])
-        print("dm.shape:", dm.shape)
         for i in range(y.shape[0]):
             dm[i, 0] = self.sharpen(y_cpu[i, 0])
-        self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
+
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
-        x_n_ma = torch.sum(x[:, -1:])
+        x_n_ma = torch.sum(x[:, -1:]) # -1: = 3:
 
-        print("sum x:", torch.sum(x[:, -1:]))
+        print("sum x:", x_n_ma)
         print("sum dm:", y_n_ma)
 
-        l_ = self.loss(x[:, :-1], y) #, loss_mask=loss_mask)
+        l_ = self.loss(x[:, :2], y) #, loss_mask=loss_mask)
         print("l_:", l_)
         # print("shapes", x.shape, dm.shape)
-        l_dm = self.loss_density_map(x[:, -1:], dm)
+        l_dm = self.loss_density_map(softmax_helper(x[:, 2:]), dm)
         print("l_dm:", l_dm)
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
         print("l_n:", l_n)

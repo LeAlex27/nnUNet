@@ -7,7 +7,7 @@ from nnunet.utilities.nd_softmax import softmax_helper
 class CountingUNet(Generic_UNet):
     def __init__(self, **unet_kw):
         unet_kw['final_nonlin'] = lambda x: x
-        unet_kw['num_classes'] = 3
+        unet_kw['num_classes'] = 4
         super(CountingUNet, self).__init__(**unet_kw)
 
         conv_kwargs = {'kernel_size': 3,
