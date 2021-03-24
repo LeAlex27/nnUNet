@@ -15,7 +15,7 @@ class CountingDiceLoss(torch.nn.Module):
     def __init__(self, alpha=0.01):
         super(CountingDiceLoss, self).__init__()
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
-        self.loss_density_map = WeightedRobustCrossEntropyLoss([0.1, 0.99])
+        self.loss_density_map = WeightedRobustCrossEntropyLoss([0.01, 0.99])
         self.loss_n_ma = torch.nn.MSELoss()
         self.n = 0
 
@@ -27,6 +27,7 @@ class CountingDiceLoss(torch.nn.Module):
         dm = np.empty_like(y_cpu[:, 0:1])
         for i in range(y.shape[0]):
             dm[i, 0] = self.sharpen(y_cpu[i, 0])
+            # dm[i, 0] = self.pixel(y_cpu[i, 0])
 
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
@@ -81,3 +82,13 @@ class CountingDiceLoss(torch.nn.Module):
                     t[i, j] = sum_
 
         return t / 2.50635
+
+    @staticmethod
+    def pixel(img):
+        t = np.zeros_like(img)
+        _, props = CountingDiceLoss.labels_and_props(img)
+
+        for p in props:
+            t[p.centroid[0], p.centroid[1]] = 1
+
+        return t
