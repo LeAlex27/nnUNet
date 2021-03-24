@@ -6,6 +6,7 @@ from skimage.measure import regionprops
 from nnunet.training.loss_functions.dice_loss import SoftDiceLoss
 from nnunet.training.loss_functions.focal_loss import FocalLoss
 from nnunet.utilities.nd_softmax import softmax_helper
+import matplotlib.pyplot as plt
 
 
 class CountingDiceLoss(torch.nn.Module):
@@ -14,6 +15,7 @@ class CountingDiceLoss(torch.nn.Module):
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
         self.loss_density_map = torch.nn.MSELoss()
         self.loss_n_ma = torch.nn.MSELoss()
+        self.n = 0
 
     def forward(self, x, y, loss_mask=None):
         print("counting_dice_loss.py:22")
@@ -21,8 +23,10 @@ class CountingDiceLoss(torch.nn.Module):
         # create gt density map
         y_cpu = y.cpu().numpy()
         dm = np.empty_like(y_cpu[:, 0:1])
+        print("dm.shape:", dm.shape)
         for i in range(y.shape[0]):
             dm[i, 0] = self.sharpen(y_cpu[i, 0])
+        self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
         x_n_ma = torch.sum(x[:, -1:])
@@ -39,6 +43,13 @@ class CountingDiceLoss(torch.nn.Module):
         print("l_n:", l_n)
 
         return l_dm # l_ + l_dm + 0.001 * l_n
+
+    def save_img(self, img, fname):
+        fig, ax = plt.subplots(1, img.shape[0], figsize=(10 * img.shape[0],  10))
+        for i in range(img.shape[0]):
+            img[i].imshow(img[i, 0])
+        fig.savefig(fname.format(self.n, img.shape[2]))
+        self.n += 1
 
     @staticmethod
     def labels_and_props(img):
