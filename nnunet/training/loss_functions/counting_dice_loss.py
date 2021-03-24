@@ -19,7 +19,7 @@ class CountingDiceLoss(torch.nn.Module):
 
     def forward(self, x, y, loss_mask=None):
         print("counting_dice_loss.py:22")
-        print(x.shape)
+        print("xs, ys:", x.shape, y.shape)
 
         # create gt density map
         y_cpu = y.cpu().numpy()
