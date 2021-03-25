@@ -90,6 +90,8 @@ class CountingDiceLoss(torch.nn.Module):
         _, props = CountingDiceLoss.labels_and_props(img)
 
         for p in props:
-            t[p.centroid[0], p.centroid[1]] = 1
+            p_i = int(p.centroid[0])
+            p_j = int(p.centroid[1])
+            t[p_i, p_j] = 1
 
         return t
