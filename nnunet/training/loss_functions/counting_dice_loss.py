@@ -16,7 +16,8 @@ class CountingDiceLoss(torch.nn.Module):
         super(CountingDiceLoss, self).__init__()
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
         # self.loss_density_map = WeightedRobustCrossEntropyLoss([0.01, 0.99])
-        self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
+        # self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
+        self.loss_density_map = RobustCrossEntropyLoss()
         self.loss_n_ma = torch.nn.MSELoss()
         self.n = 0
 
@@ -27,8 +28,8 @@ class CountingDiceLoss(torch.nn.Module):
         y_cpu = y.cpu().numpy()
         dm = np.empty_like(y_cpu[:, 0:1])
         for i in range(y.shape[0]):
-            # dm[i, 0] = self.sharpen(y_cpu[i, 0])
-            dm[i, 0] = self.pixel(y_cpu[i, 0])
+            dm[i, 0] = self.sharpen(y_cpu[i, 0])
+            # dm[i, 0] = self.pixel(y_cpu[i, 0])
         # self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
@@ -45,7 +46,7 @@ class CountingDiceLoss(torch.nn.Module):
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
         print("l_n:", l_n)
 
-        return l_ + l_dm # + l_dm + l_n
+        return l_dm  # + l_dm + l_n
 
     def save_img(self, img, fname):
         fig, ax = plt.subplots(1, img.shape[0], figsize=(10 * img.shape[0],  10))
