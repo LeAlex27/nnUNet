@@ -27,7 +27,7 @@ class SAUnit(nn.Module):
     def forward(self, x):
         print("SAWNet.py:25", x.size)
 
-        new_shape = (list(x.size)[0], list(x.size[1]), -1)
+        new_shape = (list(x.size)[0], list(x.size)[1], -1)
         print("new_shape", new_shape)
         f = self.f_conv(x).reshape(new_shape)
         g = torch.transpose(self.g_conv(x).reshape(new_shape), 1, 2)
