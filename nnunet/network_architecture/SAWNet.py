@@ -22,7 +22,7 @@ class SAUnit(nn.Module):
         self.dropout = nn.Dropout2d(**{'p': 0.5, 'inplace': True})
         self.conv = nn.Conv2d(**conv_kw)
         self.nonlin = nn.LeakyReLU(**{'negative_slope': 1e-2, 'inplace': True})
-        self.bn = nn.BatchNorm2d(**{'eps': 1e-5, 'affine': True, 'momentum': 0.1})
+        self.bn = nn.BatchNorm2d(n_channels, **{'eps': 1e-5, 'affine': True, 'momentum': 0.1})
 
     def forward(self, x):
         print("SAWNet.py:25", x.size)
