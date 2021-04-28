@@ -64,9 +64,7 @@ class SAWNet(Generic_UNet):
         transpconv = nn.ConvTranspose2d
 
         for d in range(num_pool):
-            input_features = output_features
-            output_features = int(np.round(output_features * feat_map_mul_on_downscale))
-            output_features = min(output_features, self.max_num_features)
+            input_features = base_num_features
 
         self.sau = SAUnit(input_features)
 
