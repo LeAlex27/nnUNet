@@ -102,7 +102,7 @@ class SAWNet(Generic_UNet):
                                   self.nonlin, self.nonlin_kwargs, basic_block=basic_block)
             ))
 
-        self.conv_blocks_w = nn.ModuleList(self.blocks_w)
+        self.conv_blocks_w = nn.ModuleList(self.conv_blocks_w)
 
         if self.weightInitializer is not None:
             self.apply(self.weightInitializer)
