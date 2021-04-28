@@ -2,6 +2,9 @@ import numpy as np
 import torch
 from torch import nn
 from nnunet.network_architecture.generic_UNet import Generic_UNet, StackedConvLayers, Upsample
+from nnunet.utilities.nd_softmax import softmax_helper
+from nnunet.network_architecture.initialization import InitWeights_He
+from nnunet.network_architecture.generic_UNet import ConvDropoutNormNonlin
 
 
 class SAUnit(nn.Module):
@@ -38,21 +41,27 @@ class SAUnit(nn.Module):
 
 
 class SAWNet(Generic_UNet):
-    def __init__(self, **unet_kw):
-        super(SAWNet, self).__init__(**unet_kw)
+    def __init__(self, input_channels, base_num_features, num_classes, num_pool, num_conv_per_stage=2,
+                 feat_map_mul_on_downscale=2, conv_op=nn.Conv2d,
+                 norm_op=nn.BatchNorm2d, norm_op_kwargs=None,
+                 dropout_op=nn.Dropout2d, dropout_op_kwargs=None,
+                 nonlin=nn.LeakyReLU, nonlin_kwargs=None, deep_supervision=True, dropout_in_localization=False,
+                 final_nonlin=softmax_helper, weightInitializer=InitWeights_He(1e-2), pool_op_kernel_sizes=None,
+                 conv_kernel_sizes=None,
+                 upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
+                 max_num_features=None, basic_block=ConvDropoutNormNonlin,
+                 seg_output_use_bias=False):
+        super(SAWNet, self).__init__(input_channels, base_num_features, num_classes, num_pool, num_conv_per_stage,
+                 feat_map_mul_on_downscale, conv_op, norm_op, norm_op_kwargs, dropout_op, dropout_op_kwargs,
+                 nonlin, nonlin_kwargs, deep_supervision, dropout_in_localization, final_nonlin, weightInitializer,
+                                     pool_op_kernel_sizes, conv_kernel_sizes, upscale_logits, convolutional_pooling,
+                                     convolutional_upsampling, max_num_features, basic_block, seg_output_use_bias)
 
         self.conv_blocks_w = []
         self.tuw = []
 
         upsample_mode = 'bilinear'
-        num_pool = unet_kw['num_pool']
-        num_conv_per_stage = unet_kw['num_conv_per_stage']
-        basic_block = unet_kw['basic_block']
-        pool_op_kernel_sizes = unet_kw['pool_op_kernel_sizes']
         transpconv = nn.ConvTranspose2d
-        feat_map_mul_on_downscale = unet_kw['feat_map_mul_on_downscale']
-        output_features = unet_kw['base_num_features']
-        input_features = unet_kw['input_channels']
 
         for d in range(num_pool):
             input_features = output_features
@@ -62,7 +71,7 @@ class SAWNet(Generic_UNet):
         self.sau = SAUnit(input_features)
 
         if self.convolutional_upsampling:
-            final_num_features = unet_kw['base_num_features']
+            final_num_features = base_num_features
         else:
             final_num_features = self.conv_blocks_context[-1].output_channels
 
