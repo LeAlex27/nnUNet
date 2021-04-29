@@ -114,6 +114,7 @@ class SAWNet(Generic_UNet):
             ))
 
         self.conv_blocks_w = nn.ModuleList(self.conv_blocks_w)
+        self.tuw = nn.ModuleList(self.tuw)
 
         if self.weightInitializer is not None:
             self.apply(self.weightInitializer)
