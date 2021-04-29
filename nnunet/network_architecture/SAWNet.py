@@ -129,7 +129,7 @@ class SAWNet(Generic_UNet):
             if not self.convolutional_pooling:
                 x = self.td[d](x)
 
-        sau_x = self.sau(x)
+        sau_x = self.sau(x.clone())
         x = self.conv_blocks_context[-1](x)
 
         for u in range(len(self.tu)):
