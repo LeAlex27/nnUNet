@@ -133,7 +133,9 @@ class SAWNet(Generic_UNet):
         x = self.conv_blocks_context[-1](x)
 
         for u in range(len(self.tu)):
+            print("{} x.shape".format(u, x.shape))
             x = self.tu[u](x)
+            print(x.shape, skips[-(u + 1)].shape)
             x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
