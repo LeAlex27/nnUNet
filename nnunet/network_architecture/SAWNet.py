@@ -130,8 +130,8 @@ class SAWNet(Generic_UNet):
                 x = self.td[d](x)
 
         # sau_x = self.sau(x.clone())
-        x = self.conv_blocks_context[-1](x)
-        sau_x = self.sau(x.clone())
+        x = self.conv_blocks_context[-1](x.clone())
+        sau_x = self.sau(x)
 
         for u in range(len(self.tu)):
             print("{} x.shape: {}".format(u, x.shape))
