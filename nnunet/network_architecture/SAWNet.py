@@ -25,16 +25,16 @@ class SAUnit(nn.Module):
         self.bn = nn.BatchNorm2d(n_channels, **{'eps': 1e-5, 'affine': True, 'momentum': 0.1})
 
     def forward(self, x):
-        print("SAWNet.py:25", x.size)
+        print("SAWNet.py:28", x.size())
 
-        new_shape = (list(x.size)[0], list(x.size)[1], -1)
+        new_shape = (list(x.size())[0], list(x.size())[1], -1)
         print("new_shape", new_shape)
         f = self.f_conv(x).reshape(new_shape)
         g = torch.transpose(self.g_conv(x).reshape(new_shape), 1, 2)
         h = self.h_conv(x).reshape(new_shape)
 
         fg = self.dropout(nn.functional.softmax(torch.matmul(f, g), dim=1))
-        hfg = torch.matmul(h, fg).reshape(x.size)
+        hfg = torch.matmul(h, fg).reshape(x.size())
 
         hfg = self.bn(self.nonlin(self.conv(hfg)))
         return hfg + x
@@ -108,7 +108,7 @@ class SAWNet(Generic_UNet):
             self.apply(self.weightInitializer)
 
     def forward(self, x):
-        print("SAWNet.py:ca66", x.size)
+        print("SAWNet.py:ca66", x.size())
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
