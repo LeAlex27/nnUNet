@@ -38,7 +38,7 @@ class SAUnit(nn.Module):
         print("h.shape:", h.shape)
 
         fg = self.dropout(nn.functional.softmax(torch.matmul(f, g), dim=1))
-        print("fg.size:", fg.size)
+        print("fg.size:", fg.size())
         hfg = torch.matmul(h, fg).reshape(x.size())
 
         hfg = self.bn(self.nonlin(self.conv(hfg)))
