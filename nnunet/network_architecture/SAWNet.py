@@ -31,11 +31,14 @@ class SAUnit(nn.Module):
         new_shape = (list(x.size())[0], list(x.size())[1], -1)
         print("new_shape", new_shape)
         f = self.f_conv(x).reshape(new_shape)
+        print("f.shape:", f.shape())
         g = torch.transpose(self.g_conv(x).reshape(new_shape), 1, 2)
+        print("g.shape:", g.shape())
         h = self.h_conv(x).reshape(new_shape)
+        print("h.shape:", h.shape())
 
         fg = self.dropout(nn.functional.softmax(torch.matmul(f, g), dim=1))
-        print("SAWNet.py:38", h.size(), fg.size())
+        print("fg.size:", fg.size())
         hfg = torch.matmul(h, fg).reshape(x.size())
 
         hfg = self.bn(self.nonlin(self.conv(hfg)))
