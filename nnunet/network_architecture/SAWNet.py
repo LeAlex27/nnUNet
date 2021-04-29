@@ -99,6 +99,8 @@ class SAWNet(Generic_UNet):
             if not self.convolutional_upsampling:
                 self.tuw.append(Upsample(scale_factor=pool_op_kernel_sizes[-(u + 1)], mode=upsample_mode))
             else:
+                print("u: {} nfeatures_from_down: {} nfeatures_from_skip: {}".format(u, nfeatures_from_down,
+                                                                                     nfeatures_from_skip))
                 self.tuw.append(transpconv(nfeatures_from_down, nfeatures_from_skip, pool_op_kernel_sizes[-(u + 1)],
                                            pool_op_kernel_sizes[-(u + 1)], bias=False))
 
@@ -137,6 +139,7 @@ class SAWNet(Generic_UNet):
 
         saw_outputs = []
         for u in range(len(self.tuw)):
+            print("{} sau_x.shape".format(u), sau_x.shape)
             sau_x = self.tuw[u](sau_x)
             sau_x = torch.cat((sau_x, skips[-(u + 1)]), dim=1)
             sau_x = self.conv_blocks_w[u](sau_x)
