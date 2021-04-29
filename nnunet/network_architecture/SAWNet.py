@@ -10,6 +10,7 @@ from nnunet.network_architecture.generic_UNet import ConvDropoutNormNonlin
 class SAUnit(nn.Module):
     def __init__(self, n_channels):
         super(SAUnit, self).__init__()\
+        print("SAWNet.py:13 n_channels:". n_channel)
 
         conv_kw = {'in_channels': n_channels,
                    'out_channels': n_channels,
@@ -63,8 +64,12 @@ class SAWNet(Generic_UNet):
         upsample_mode = 'bilinear'
         transpconv = nn.ConvTranspose2d
 
+        output_features = base_num_features
+        input_features = input_channels
         for d in range(num_pool):
-            input_features = base_num_features
+            input_features = output_features
+            output_features = int(np.round(output_features * feat_map_mul_on_downscale))
+            output_features = min(output_features, self.max_num_features)
 
         self.sau = SAUnit(input_features)
 
