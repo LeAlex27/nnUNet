@@ -10,7 +10,7 @@ from nnunet.network_architecture.generic_UNet import ConvDropoutNormNonlin
 class SAUnit(nn.Module):
     def __init__(self, n_channels):
         super(SAUnit, self).__init__()
-        print("SAWNet.py:13 n_channels:". n_channel)
+        print("SAWNet.py:13 n_channels:", n_channels)
 
         conv_kw = {'in_channels': n_channels,
                    'out_channels': n_channels,
