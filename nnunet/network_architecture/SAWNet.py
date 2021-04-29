@@ -120,44 +120,45 @@ class SAWNet(Generic_UNet):
             self.apply(self.weightInitializer)
 
     def forward(self, x):
-        print("SAWNet.py:ca66", x.size())
-        skips = []
-        seg_outputs = []
-        for d in range(len(self.conv_blocks_context) - 1):
-            x = self.conv_blocks_context[d](x)
-            skips.append(x)
-            if not self.convolutional_pooling:
-                x = self.td[d](x)
+        with torch.autograd.set_detect_anomaly(True):
+            print("SAWNet.py:ca66", x.size())
+            skips = []
+            seg_outputs = []
+            for d in range(len(self.conv_blocks_context) - 1):
+                x = self.conv_blocks_context[d](x)
+                skips.append(x)
+                if not self.convolutional_pooling:
+                    x = self.td[d](x)
 
-        # sau_x = self.sau(x.clone())
-        x = self.conv_blocks_context[-1](x)
-        sau_x = self.sau(x.clone())
+            # sau_x = self.sau(x.clone())
+            x = self.conv_blocks_context[-1](x)
+            sau_x = self.sau(x.clone())
 
-        for u in range(len(self.tu)):
-            print("{} x.shape: {}".format(u, x.shape))
-            x = self.tu[u](x)
-            print(x.shape, skips[-(u + 1)].shape)
-            x = torch.cat((x, skips[-(u + 1)]), dim=1)
-            x = self.conv_blocks_localization[u](x)
-            seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
+            for u in range(len(self.tu)):
+                print("{} x.shape: {}".format(u, x.shape))
+                x = self.tu[u](x)
+                print(x.shape, skips[-(u + 1)].shape)
+                x = torch.cat((x, skips[-(u + 1)]), dim=1)
+                x = self.conv_blocks_localization[u](x)
+                seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
-        saw_outputs = []
-        for u in range(len(self.tuw)):
-            print("{} sau_x.shape".format(u), sau_x.shape)
-            sau_x = self.tuw[u](sau_x)
-            print("skips.shape:", skips[-(u + 1)].shape, sau_x.shape)
-            sau_x = torch.cat((sau_x, skips[-(u + 1)]), dim=1)
-            sau_x = self.conv_blocks_w[u](sau_x)
-            saw_outputs.append(sau_x)
+            saw_outputs = []
+            for u in range(len(self.tuw)):
+                print("{} sau_x.shape".format(u), sau_x.shape)
+                sau_x = self.tuw[u](sau_x)
+                print("skips.shape:", skips[-(u + 1)].shape, sau_x.shape)
+                sau_x = torch.cat((sau_x, skips[-(u + 1)]), dim=1)
+                sau_x = self.conv_blocks_w[u](sau_x)
+                saw_outputs.append(sau_x)
 
-        if self._deep_supervision and self.do_ds:
-            assert self.upscale_logits is False
-            return tuple([torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)]
-                         + [torch.cat((i(j), i(k)), dim=1) for i, j, k in zip(list(self.upscale_logits_ops)[::-1],
-                                                                              seg_outputs[:-1][::-1],
-                                                                              saw_outputs[:-1][::-1])])
-        else:
-            return seg_outputs[-1], saw_outputs[-1]  # todo: cat
+            if self._deep_supervision and self.do_ds:
+                assert self.upscale_logits is False
+                return tuple([torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)]
+                             + [torch.cat((i(j), i(k)), dim=1) for i, j, k in zip(list(self.upscale_logits_ops)[::-1],
+                                                                                  seg_outputs[:-1][::-1],
+                                                                                  saw_outputs[:-1][::-1])])
+            else:
+                return seg_outputs[-1], saw_outputs[-1]  # todo: cat
 
     @staticmethod
     def compute_approx_vram_consumption(**kw_args):
