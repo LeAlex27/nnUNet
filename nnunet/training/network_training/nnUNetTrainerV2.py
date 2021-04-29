@@ -246,7 +246,8 @@ class nnUNetTrainerV2(nnUNetTrainer):
             with autocast():
                 output = self.network(data)
                 del data
-                l = self.loss(output, target)
+                with torch.autograd.set_detect_anomaly(True):
+                    l = self.loss(output, target)
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
