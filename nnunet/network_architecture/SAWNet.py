@@ -20,6 +20,7 @@ class SAUnit(nn.Module):
         self.g_conv = nn.Conv2d(**conv_kw)
         self.h_conv = nn.Conv2d(**conv_kw)
 
+        self.softmax = nn.Softmax(dim=1)
         self.dropout = nn.Dropout2d(**{'p': 0.5, 'inplace': True})
         self.conv = nn.Conv2d(**conv_kw)
         self.nonlin = nn.LeakyReLU(**{'negative_slope': 1e-2, 'inplace': True})
@@ -37,7 +38,7 @@ class SAUnit(nn.Module):
         h = self.h_conv(x).reshape(new_shape)
         print("h.shape:", h.shape)
 
-        fg = self.dropout(nn.functional.softmax(torch.matmul(f, g), dim=1))
+        fg = self.dropout(self.softmax(torch.matmul(f, g)))
         print("fg.size:", fg.size())
         hfg = torch.matmul(fg, h).reshape(x.size())
 
@@ -120,7 +121,7 @@ class SAWNet(Generic_UNet):
             self.apply(self.weightInitializer)
 
     def forward(self, x):
-        print("SAWNet.py:ca66", x.size())
+        print("SAWNet.py:123", x.size())
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
@@ -129,9 +130,8 @@ class SAWNet(Generic_UNet):
             if not self.convolutional_pooling:
                 x = self.td[d](x)
 
-        # sau_x = self.sau(x.clone())
-        x = self.conv_blocks_context[-1](x.clone())
-        sau_x = self.sau(x)
+        x = self.conv_blocks_context[-1](x)
+        sau_x = self.sau(x.clone())
 
         for u in range(len(self.tu)):
             print("{} x.shape: {}".format(u, x.shape))
