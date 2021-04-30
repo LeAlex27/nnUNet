@@ -33,7 +33,7 @@ class CountingDiceLoss(torch.nn.Module):
         # self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
-        x_n_ma = torch.sum(x[:, 3]) # -1: = 3:
+        x_n_ma = torch.sum(x[:, 2]) # -1: = 3:
 
         print("sum x:", x_n_ma)
         print("sum dm:", y_n_ma)
