@@ -563,7 +563,8 @@ class SegmentationNetwork(NeuralNetwork):
         assert len(x.shape) == 4, 'x must be (b, c, x, y)'
 
         x = to_cuda(maybe_to_torch(x), gpu_id=self.get_device())
-        result_torch = torch.zeros([x.shape[0], self.num_classes] + list(x.shape[2:]),
+        # HACK num_classes + 1
+        result_torch = torch.zeros([x.shape[0], self.num_classes + 1] + list(x.shape[2:]),
                                    dtype=torch.float).cuda(self.get_device(), non_blocking=True)
 
         if mult is not None:
