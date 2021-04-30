@@ -27,20 +27,20 @@ class SAUnit(nn.Module):
         self.bn = nn.BatchNorm2d(n_channels, **{'eps': 1e-5, 'affine': True, 'momentum': 0.1})
 
     def forward(self, x):
-        print("SAWNet.py:29", x.size())
+        # print("SAWNet.py:29", x.size())
 
         new_shape = (list(x.size())[0], list(x.size())[1], -1)
-        print("new_shape", new_shape)
+        # print("new_shape", new_shape)
         f = self.f_conv(x).reshape(new_shape)
-        print("f.shape:", f.shape)
+        # print("f.shape:", f.shape)
         g = torch.transpose(self.g_conv(x).reshape(new_shape), 1, 2)
-        print("g.shape:", g.shape)
+        # print("g.shape:", g.shape)
         h = self.h_conv(x).reshape(new_shape)
-        print("h.shape:", h.shape)
+        # print("h.shape:", h.shape)
 
         fg = torch.matmul(f, g)
-        fg = self.dropout(self.softmax(fg.clone()))
-        print("fg.size:", fg.size())
+        fg = self.dropout(self.softmax(fg))
+        # print("fg.size:", fg.size())
         hfg = torch.matmul(fg, h).reshape(x.size())
 
         hfg = self.bn(self.nonlin(self.conv(hfg)))
