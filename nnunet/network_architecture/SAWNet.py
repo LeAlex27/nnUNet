@@ -10,7 +10,7 @@ from nnunet.network_architecture.generic_UNet import ConvDropoutNormNonlin
 class SAUnit(nn.Module):
     def __init__(self, n_channels):
         super(SAUnit, self).__init__()
-        print("SAWNet.py:13 n_channels:", n_channels)
+        # print("SAWNet.py:13 n_channels:", n_channels)
 
         conv_kw = {'in_channels': n_channels,
                    'out_channels': n_channels,
@@ -101,8 +101,8 @@ class SAWNet(Generic_UNet):
             if not self.convolutional_upsampling:
                 self.tuw.append(Upsample(scale_factor=pool_op_kernel_sizes[-(u + 1)], mode=upsample_mode))
             else:
-                print("u: {} nfeatures_from_down: {} nfeatures_from_skip: {}".format(u, nfeatures_from_down,
-                                                                                     nfeatures_from_skip))
+                # print("u: {} nfeatures_from_down: {} nfeatures_from_skip: {}".format(u, nfeatures_from_down,
+                #                                                                     nfeatures_from_skip))
                 self.tuw.append(transpconv(nfeatures_from_down, nfeatures_from_skip, pool_op_kernel_sizes[-(u + 1)],
                                            pool_op_kernel_sizes[-(u + 1)], bias=False))
 
@@ -122,7 +122,7 @@ class SAWNet(Generic_UNet):
             self.apply(self.weightInitializer)
 
     def forward(self, x):
-        print("SAWNet.py:123", x.size())
+        # print("SAWNet.py:123", x.size())
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
@@ -135,18 +135,18 @@ class SAWNet(Generic_UNet):
         sau_x = self.sau(x.clone())
 
         for u in range(len(self.tu)):
-            print("{} x.shape: {}".format(u, x.shape))
+            # print("{} x.shape: {}".format(u, x.shape))
             x = self.tu[u](x)
-            print(x.shape, skips[-(u + 1)].shape)
+            # print(x.shape, skips[-(u + 1)].shape)
             x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
         saw_outputs = []
         for u in range(len(self.tuw)):
-            print("{} sau_x.shape".format(u), sau_x.shape)
+            # print("{} sau_x.shape".format(u), sau_x.shape)
             sau_x = self.tuw[u](sau_x)
-            print("skips.shape:", skips[-(u + 1)].shape, sau_x.shape)
+            # print("skips.shape:", skips[-(u + 1)].shape, sau_x.shape)
             sau_x = torch.cat((sau_x, skips[-(u + 1)]), dim=1)
             sau_x = self.conv_blocks_w[u](sau_x)
             saw_outputs.append(sau_x)
