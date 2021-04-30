@@ -152,7 +152,7 @@ class SAWNet(Generic_UNet):
             sau_x = self.conv_blocks_w[u](sau_x)
             saw_outputs.append(sau_x)
 
-            saw_output = self.final_conv(saw_outputs[-1])
+        saw_output = self.final_conv(saw_outputs[-1])
 
         if self._deep_supervision and self.do_ds:
             assert self.upscale_logits is False
