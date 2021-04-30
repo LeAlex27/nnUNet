@@ -353,22 +353,22 @@ class SegmentationNetwork(NeuralNetwork):
                 add_for_nb_of_preds = torch.ones(data.shape[1:], device=self.get_device())
 
             if verbose: print("initializing result array (on GPU)")
-            aggregated_results = torch.zeros([self.num_classes] + list(data.shape[1:]), dtype=torch.half,
+            aggregated_results = torch.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=torch.half,
                                              device=self.get_device())
 
             if verbose: print("moving data to GPU")
             data = torch.from_numpy(data).cuda(self.get_device(), non_blocking=True)
 
             if verbose: print("initializing result_numsamples (on GPU)")
-            aggregated_nb_of_predictions = torch.zeros([self.num_classes] + list(data.shape[1:]), dtype=torch.half,
+            aggregated_nb_of_predictions = torch.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=torch.half,
                                                        device=self.get_device())
         else:
             if use_gaussian and num_tiles > 1:
                 add_for_nb_of_preds = self._gaussian_3d
             else:
                 add_for_nb_of_preds = np.ones(data.shape[1:], dtype=np.float32)
-            aggregated_results = np.zeros([self.num_classes] + list(data.shape[1:]), dtype=np.float32)
-            aggregated_nb_of_predictions = np.zeros([self.num_classes] + list(data.shape[1:]), dtype=np.float32)
+            aggregated_results = np.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=np.float32)
+            aggregated_nb_of_predictions = np.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=np.float32)
 
         for x in steps[0]:
             lb_x = x
@@ -666,22 +666,23 @@ class SegmentationNetwork(NeuralNetwork):
                 add_for_nb_of_preds = torch.ones(data.shape[1:], device=self.get_device())
 
             if verbose: print("initializing result array (on GPU)")
-            aggregated_results = torch.zeros([self.num_classes] + list(data.shape[1:]), dtype=torch.half,
+            # HACK +1
+            aggregated_results = torch.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=torch.half,
                                              device=self.get_device())
 
             if verbose: print("moving data to GPU")
             data = torch.from_numpy(data).cuda(self.get_device(), non_blocking=True)
 
             if verbose: print("initializing result_numsamples (on GPU)")
-            aggregated_nb_of_predictions = torch.zeros([self.num_classes] + list(data.shape[1:]), dtype=torch.half,
+            aggregated_nb_of_predictions = torch.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=torch.half,
                                                        device=self.get_device())
         else:
             if use_gaussian and num_tiles > 1:
                 add_for_nb_of_preds = self._gaussian_2d
             else:
                 add_for_nb_of_preds = np.ones(data.shape[1:], dtype=np.float32)
-            aggregated_results = np.zeros([self.num_classes] + list(data.shape[1:]), dtype=np.float32)
-            aggregated_nb_of_predictions = np.zeros([self.num_classes] + list(data.shape[1:]), dtype=np.float32)
+            aggregated_results = np.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=np.float32)
+            aggregated_nb_of_predictions = np.zeros([self.num_classes + 1] + list(data.shape[1:]), dtype=np.float32)
 
         for x in steps[0]:
             lb_x = x
