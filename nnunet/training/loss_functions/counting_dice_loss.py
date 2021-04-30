@@ -22,7 +22,7 @@ class CountingDiceLoss(torch.nn.Module):
         self.n = 0
 
     def forward(self, x, y, loss_mask=None):
-        print("counting_dice_loss.py:22")
+        # print("counting_dice_loss.py:22")
 
         # create gt density map
         y_cpu = y.cpu().numpy()
@@ -35,17 +35,17 @@ class CountingDiceLoss(torch.nn.Module):
         y_n_ma = torch.sum(dm)
         x_n_ma = torch.sum(x[:, 2]) # -1: = 3:
 
-        print("sum x:", x_n_ma)
-        print("sum dm:", y_n_ma)
+        # print("sum x:", x_n_ma)
+        # print("sum dm:", y_n_ma)
 
         l_ = self.loss(x[:, :2], y) #, loss_mask=loss_mask)
-        print("l_:", l_)
+        # print("l_:", l_)
         # print("shapes", x.shape, dm.shape)
         # l_dm = self.loss_density_map(softmax_helper(x[:, 2:]), dm)
         l_dm = self.loss_density_map(x[:, 2:], dm)
-        print("l_dm:", l_dm)
+        # print("l_dm:", l_dm)
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
-        print("l_n:", l_n)
+        # print("l_n:", l_n)
 
         return l_ + l_dm # + 1e-6 * l_n  # + l_dm + l_n
 
