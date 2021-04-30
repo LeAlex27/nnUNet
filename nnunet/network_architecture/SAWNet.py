@@ -157,7 +157,7 @@ class SAWNet(Generic_UNet):
             # print("skips.shape:", skips[-(u + 1)].shape, sau_x.shape)
             sau_x = torch.cat((sau_x, skips[-(u + 1)]), dim=1)
             sau_x = self.conv_blocks_w[u](sau_x)
-            saw_outputs.append(sau_x)
+            saw_outputs.append(self.w_outputs[u](sau_x))
 
         saw_output = self.final_conv(saw_outputs[-1])
 
