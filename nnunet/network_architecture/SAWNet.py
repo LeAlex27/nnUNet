@@ -117,6 +117,7 @@ class SAWNet(Generic_UNet):
 
         self.conv_blocks_w = nn.ModuleList(self.conv_blocks_w)
         self.tuw = nn.ModuleList(self.tuw)
+        self.final_conv = nn.Conv2d(32, 1, (1, 1))
 
         if self.weightInitializer is not None:
             self.apply(self.weightInitializer)
@@ -151,14 +152,16 @@ class SAWNet(Generic_UNet):
             sau_x = self.conv_blocks_w[u](sau_x)
             saw_outputs.append(sau_x)
 
+            saw_output = self.final_conv(saw_outputs[-1])
+
         if self._deep_supervision and self.do_ds:
             assert self.upscale_logits is False
-            return tuple([torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)]
+            return tuple([torch.cat((seg_outputs[-1], saw_output), dim=1)]
                          + [torch.cat((i(j), i(k)), dim=1) for i, j, k in zip(list(self.upscale_logits_ops)[::-1],
                                                                               seg_outputs[:-1][::-1],
                                                                               saw_outputs[:-1][::-1])])
         else:
-            return torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)
+            return torch.cat((seg_outputs[-1], saw_output), dim=1)
 
     @staticmethod
     def compute_approx_vram_consumption(**kw_args):
