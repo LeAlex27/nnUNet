@@ -66,6 +66,7 @@ class SAWNet(Generic_UNet):
 
         self.conv_blocks_w = []
         self.tuw = []
+        self.w_outputs = []
 
         upsample_mode = 'bilinear'
         transpconv = nn.ConvTranspose2d
@@ -115,8 +116,13 @@ class SAWNet(Generic_UNet):
                                   self.nonlin, self.nonlin_kwargs, basic_block=basic_block)
             ))
 
+        for ds in range(len(self.conv_blocks_w)):
+            self.w_outputs.append(conv_op(self.conv_blocks_w[ds][-1].output_channels, 1,
+                                          1, 1, 0, 1, 1, seg_output_use_bias))
+
         self.conv_blocks_w = nn.ModuleList(self.conv_blocks_w)
         self.tuw = nn.ModuleList(self.tuw)
+        self.w_outputs = nn.ModuleList(self.w_outputs)
         self.final_conv = nn.Conv2d(32, 1, (1, 1))
 
         if self.weightInitializer is not None:
@@ -141,6 +147,7 @@ class SAWNet(Generic_UNet):
             # print(x.shape, skips[-(u + 1)].shape)
             x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
+            print("SN:144 {}".format(x.shape))
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
         saw_outputs = []
