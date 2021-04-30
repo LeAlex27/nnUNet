@@ -158,7 +158,7 @@ class SAWNet(Generic_UNet):
                                                                               seg_outputs[:-1][::-1],
                                                                               saw_outputs[:-1][::-1])])
         else:
-            return seg_outputs[-1], saw_outputs[-1]  # todo: cat
+            return torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)
 
     @staticmethod
     def compute_approx_vram_consumption(**kw_args):
