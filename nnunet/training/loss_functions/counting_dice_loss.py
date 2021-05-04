@@ -39,15 +39,15 @@ class CountingDiceLoss(torch.nn.Module):
         # print("sum dm:", y_n_ma)
 
         l_ = self.loss(x[:, :2], y) #, loss_mask=loss_mask)
-        print("l_:", l_)
+        print("l_: {:e}".format(l_))
         # print("shapes", x.shape, dm.shape)
         # l_dm = self.loss_density_map(softmax_helper(x[:, 2:]), dm)
         l_dm = self.loss_density_map(x[:, 2:], dm)
-        print("l_dm:", l_dm)
+        print("l_dm: {:e}".format(l_dm))
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
         # print("l_n:", l_n)
 
-        return l_ + l_dm # + 1e-6 * l_n  # + l_dm + l_n
+        return l_ + 100.0 * l_dm # + 1e-6 * l_n  # + l_dm + l_n
 
     def save_img(self, img, fname):
         fig, ax = plt.subplots(1, img.shape[0], figsize=(10 * img.shape[0],  10))
