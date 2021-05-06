@@ -12,7 +12,7 @@ class sawNetTrainer(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainer, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
-        self.loss = CountingDiceLoss()
+        self.loss = CountingDiceLoss(self.output_folder)
         self.max_num_epochs = 400
 
     def initialize_network(self):
