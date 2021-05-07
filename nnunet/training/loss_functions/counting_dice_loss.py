@@ -48,7 +48,7 @@ class CountingDiceLoss(torch.nn.Module):
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
         # print("l_n:", l_n)
 
-        return l_ + 100.0 * l_dm # + 1e-6 * l_n  # + l_dm + l_n
+        return l_ + 1.0 * l_dm  # + 1e-6 * l_n  # + l_dm + l_n
 
     def save_img(self, img, fname):
         fig, ax = plt.subplots(1, img.shape[0], figsize=(10 * img.shape[0],  10))
