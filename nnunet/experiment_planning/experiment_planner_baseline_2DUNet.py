@@ -38,7 +38,7 @@ class ExperimentPlanner2D(ExperimentPlanner):
 
         self.unet_base_num_features = 30
         self.unet_max_num_filters = 512
-        self.unet_max_numpool = 999
+        self.unet_max_numpool = 4  # 999
 
         self.preprocessor_name = "PreprocessorFor2D"
 

@@ -45,7 +45,7 @@ class sawNetTrainer(nnUNetTrainerV2):
         net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
         print("sawNetTrainer.py:46", self.net_num_pool_op_kernel_sizes)
         self.network = SAWNet(self.num_input_channels, self.base_num_features, self.num_classes,
-                              4,  # len(self.net_num_pool_op_kernel_sizes),
+                              len(self.net_num_pool_op_kernel_sizes),
                               self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                               dropout_op_kwargs,
                               net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
