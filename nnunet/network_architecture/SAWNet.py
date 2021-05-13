@@ -24,7 +24,7 @@ class SAUnit(nn.Module):
         self.dropout = nn.Dropout2d(**{'p': 0.5})  #, 'inplace': True})
         self.conv = nn.Conv2d(**conv_kw)
         self.nonlin = nn.LeakyReLU(**{'negative_slope': 1e-2})  #, 'inplace': True})
-        self.bn = nn.BatchNorm2d(n_channels, **{'eps': 1e-5, 'affine': True, 'momentum': 0.1})
+        self.bn = nn.BatchNorm2d(n_channels, **{'eps': 1e-5, 'affine': True, 'momentum': 0.9})
 
     def forward(self, x):
         # print("SAWNet.py:29", x.size())
@@ -158,8 +158,6 @@ class SAWNet(Generic_UNet):
             sau_x = torch.cat((sau_x, skips[-(u + 1)]), dim=1)
             sau_x = self.conv_blocks_w[u](sau_x)
             saw_outputs.append(self.w_outputs[u](sau_x))
-
-       #  saw_output = self.final_conv(saw_outputs[-1])
 
         if self._deep_supervision and self.do_ds:
             assert self.upscale_logits is False
