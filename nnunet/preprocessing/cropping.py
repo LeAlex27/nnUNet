@@ -201,10 +201,6 @@ class ImageCropper(object):
             case_identifier = get_case_identifier(case)
             list_of_args.append((case, case_identifier, overwrite_existing))
 
-        print("cropping.py:204")
-        print(list_of_args)
-        print(list_of_files)
-
         p = Pool(self.num_threads)
         p.starmap(self.load_crop_save, list_of_args)
         p.close()
