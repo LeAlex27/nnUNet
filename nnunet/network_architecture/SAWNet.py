@@ -81,10 +81,10 @@ class SAWNet(Generic_UNet):
             output_features = min(output_features, self.max_num_features)
             print("{}: {}".format(d, input_features))
 
-        self.sau = SAUnit(input_features)
+        self.sau = SAUnit(output_features)
 
         if self.convolutional_upsampling:
-            final_num_features = input_features  # base_num_features
+            final_num_features = output_features  # base_num_features
         else:
             final_num_features = self.conv_blocks_context[-1].output_channels
 
