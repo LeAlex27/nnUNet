@@ -15,6 +15,7 @@ class sauNetTrainer(nnUNetTrainerV2):
         self.loss = RobustCrossEntropyLoss()
         self.max_num_epochs = 350
         self.initial_lr = 1e-3
+        self.num_classes = 1
 
     def initialize_network(self):
         """
