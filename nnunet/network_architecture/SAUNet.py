@@ -35,7 +35,7 @@ class SAUNet(Generic_UNet):
             output_features = min(output_features, self.max_num_features)
             print("{}: {}".format(d, input_features))
 
-        self.sau = SAUNet(output_features)
+        self.sau = SAUnit(output_features)
 
     def forward(self, x):
         skips = []
