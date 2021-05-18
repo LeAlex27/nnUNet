@@ -3,7 +3,7 @@ from torch import nn
 from nnunet.training.network_training.nnUNetTrainerV2 import nnUNetTrainerV2
 from nnunet.network_architecture.SAUNet import SAUNet
 from nnunet.network_architecture.initialization import InitWeights_He
-from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
+from nnunet.training.loss_functions.crossentropy import RobustCrossEntropyLoss
 import numpy as np
 
 
@@ -12,7 +12,7 @@ class sauNetTrainer(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sauNetTrainer, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
-        self.loss = CountingDiceLoss(self.output_folder)
+        self.loss = RobustCrossEntropyLoss()
         self.max_num_epochs = 350
         self.initial_lr = 1e-3
 
