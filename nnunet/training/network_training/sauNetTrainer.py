@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from nnunet.training.network_training.nnUNetTrainerV2 import nnUNetTrainerV2
-from nnunet.network_architecture.SAWNet import SAWNet
+from nnunet.network_architecture.SAUNet import SAUNet
 from nnunet.network_architecture.initialization import InitWeights_He
 from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
 import numpy as np
@@ -43,7 +43,7 @@ class sauNetTrainer(nnUNetTrainerV2):
         net_nonlin = nn.LeakyReLU
         net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
         print("sawNetTrainer.py:46", self.net_num_pool_op_kernel_sizes)
-        self.network = SAWNet(self.num_input_channels, self.base_num_features, self.num_classes,
+        self.network = SAUNet(self.num_input_channels, self.base_num_features, self.num_classes,
                               len(self.net_num_pool_op_kernel_sizes),
                               self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                               dropout_op_kwargs,
