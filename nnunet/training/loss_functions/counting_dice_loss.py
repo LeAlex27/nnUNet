@@ -1,12 +1,10 @@
 import numpy as np
+import pickle
 import skimage
 import torch
 from skimage.morphology import label
 from skimage.measure import regionprops
 from nnunet.training.loss_functions.dice_loss import SoftDiceLoss
-from nnunet.training.loss_functions.focal_loss import FocalLoss
-from nnunet.training.loss_functions.crossentropy import RobustCrossEntropyLoss
-from nnunet.training.loss_functions.crossentropy import WeightedRobustCrossEntropyLoss
 from nnunet.utilities.nd_softmax import softmax_helper
 import matplotlib.pyplot as plt
 
@@ -16,15 +14,25 @@ class CountingDiceLoss(torch.nn.Module):
         super(CountingDiceLoss, self).__init__()
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
         self.loss_density_map = torch.nn.MSELoss() # WeightedRobustCrossEntropyLoss([0.001, 0.999])
-        # self.loss_density_map = SoftDiceLoss(**{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
-        # self.loss_density_map = RobustCrossEntropyLoss()
+
         self.loss_n_ma = torch.nn.MSELoss()
         self.n = 0
         self.output_folder = output_folder
 
-    def forward(self, x, y, loss_mask=None):
-        # print("counting_dice_loss.py:22")
+        self.l_ = []
+        self.l_dm = []
+        self.l_n = []
+        self.l_total = []
 
+    def __del__(self):
+        if self.output_folder is not None:
+            with open(self.output_folder + '/losses.pickle', 'wb') as f:
+                pickle.dump(self.l_, f)
+                pickle.dump(self.l_dm, f)
+                pickle.dump(self.l_n, f)
+                pickle.dump(self.l_total, f)
+
+    def forward(self, x, y, loss_mask=None):
         # create gt density map
         y_cpu = y.cpu().numpy()
         dm = np.empty_like(y_cpu[:, 0:1])
@@ -34,21 +42,26 @@ class CountingDiceLoss(torch.nn.Module):
         # self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
-        x_n_ma = torch.sum(x[:, 2]) # -1: = 3:
+        x_n_ma = torch.sum(x[:, 2])  # -1: = 3:
 
         # print("sum x:", x_n_ma)
         # print("sum dm:", y_n_ma)
 
-        l_ = self.loss(x[:, :2], y) #, loss_mask=loss_mask)
-        print("l_: {:e}".format(l_))
-        # print("shapes", x.shape, dm.shape)
-        # l_dm = self.loss_density_map(softmax_helper(x[:, 2:]), dm)
+        l_ = self.loss(x[:, :2], y)
+        #print("l_: {:e}".format(l_))
         l_dm = self.loss_density_map(x[:, 2:], dm)
-        print("l_dm: {:e}".format(l_dm))
+        #print("l_dm: {:e}".format(l_dm))
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
         # print("l_n:", l_n)
 
-        return l_ + l_dm  # + 1e-6 * l_n  # + l_dm + l_n
+        l_total = l_ + l_dm
+
+        self.l_.append(l_.cpu().numpy())
+        self.l_dm.append(l_dm.cpu().numpy())
+        self.l_n.append(l_n.cpu().numpy())
+        self.l_total.append(l_.cpu().numpy())
+
+        return l_total
 
     def save_img(self, img, fname):
         fig, ax = plt.subplots(1, img.shape[0], figsize=(10 * img.shape[0],  10))
