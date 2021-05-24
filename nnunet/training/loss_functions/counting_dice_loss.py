@@ -23,6 +23,7 @@ class CountingDiceLoss(torch.nn.Module):
         self.l_dm = []
         self.l_n = []
         self.l_total = []
+        self.sizes = []
 
     def __del__(self):
         if self.output_folder is not None:
@@ -31,6 +32,7 @@ class CountingDiceLoss(torch.nn.Module):
                 pickle.dump(self.l_dm, f)
                 pickle.dump(self.l_n, f)
                 pickle.dump(self.l_total, f)
+                pickle.dump(self.sizes, f)
 
     def forward(self, x, y, loss_mask=None):
         # create gt density map
@@ -60,6 +62,7 @@ class CountingDiceLoss(torch.nn.Module):
         self.l_dm.append(l_dm.detach().cpu().numpy())
         self.l_n.append(l_n.detach().cpu().numpy())
         self.l_total.append(l_.detach().cpu().numpy())
+        self.sizes.append(list(x.size()))
 
         return l_total
 
