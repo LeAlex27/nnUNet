@@ -56,9 +56,9 @@ class sawNetTrainer(nnUNetTrainerV2):
 
     def initialize_optimizer_and_scheduler(self):
         assert self.network is not None, "self.initialize_network must be called first"
-        self.optimizer = torch.optim.SGD(self.network.parameters(), self.initial_lr, weight_decay=self.weight_decay,
-                                         momentum=0.99, nesterov=True)
-        # self.optimizer = torch.optim.Adam(self.network.parameters(), self.initial_lr)
+        # self.optimizer = torch.optim.SGD(self.network.parameters(), self.initial_lr, weight_decay=self.weight_decay,
+        #                                 momentum=0.99, nesterov=True)
+        self.optimizer = torch.optim.Adam(self.network.parameters(), self.initial_lr)
 
         def cosine_wwr(step):
             t_mul = 2.0
@@ -79,4 +79,4 @@ class sawNetTrainer(nnUNetTrainerV2):
 
             return decayed
 
-        # self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, cosine_wwr)
+        self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, cosine_wwr)
