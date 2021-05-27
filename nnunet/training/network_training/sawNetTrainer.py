@@ -14,7 +14,7 @@ class sawNetTrainer(nnUNetTrainerV2):
         super(sawNetTrainer, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage,
                                             unpack_data, deterministic, fp16)
         self.loss = CountingDiceLoss(self.output_folder)
-        self.max_num_epochs = 600
+        self.max_num_epochs = 20
         self.initial_lr = 1e-3
 
     def initialize_network(self):
@@ -47,8 +47,8 @@ class sawNetTrainer(nnUNetTrainerV2):
         self.network = SAWNet(self.num_input_channels, self.base_num_features, self.num_classes,
                               len(self.net_num_pool_op_kernel_sizes),
                               self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
-                              dropout_op_kwargs,
-                              net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
+                              dropout_op_kwargs,            # ds below
+                              net_nonlin, net_nonlin_kwargs, False, False, lambda x: x, InitWeights_He(1e-2),
                               self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
         if torch.cuda.is_available():
             self.network.cuda()
