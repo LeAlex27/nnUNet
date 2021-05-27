@@ -79,4 +79,4 @@ class sawNetTrainer(nnUNetTrainerV2):
 
             return decayed
 
-        self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, cosine_wwr)
+        # self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, cosine_wwr)
