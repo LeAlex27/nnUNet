@@ -587,8 +587,8 @@ class DataLoader2D(SlimDataLoaderBase):
                                                                 (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
                                            'constant', **{'constant_values': -1})
 
-            print("gen train batch")
-            print(case_all_data_segonly.shape)
+            # print("gen train batch")
+            # print(case_all_data_segonly.shape)
 
             data[j] = case_all_data_donly
             seg[j] = case_all_data_segonly
