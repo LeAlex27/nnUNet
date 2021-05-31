@@ -56,7 +56,7 @@ class CountingDiceLoss(torch.nn.Module):
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
         # print("l_n:", l_n)
 
-        l_total = l_dm
+        l_total = l_dm + l_
 
         self.l_.append(l_.detach().cpu().numpy())
         self.l_dm.append(l_dm.detach().cpu().numpy())
