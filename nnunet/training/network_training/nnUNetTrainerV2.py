@@ -248,12 +248,8 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 output = self.network(data)
                 print("nnUNetTrainerV2.py:249", target[0].size())
                 del data
-                if not self._deep_supervision:
-                    output = [output]
-                    l = self.loss(output[0], target[0])
-                else:
-                    l = self.loss(output, target)
-
+                output = [output]
+                l = self.loss(output[0], target[0])
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
@@ -264,11 +260,11 @@ class nnUNetTrainerV2(nnUNetTrainer):
         else:
             output = self.network(data)
             del data
-            if not self._deep_supervision:
-                output = [output]
-                l = self.loss(output[0], target[0])
-            else:
-                l = self.loss(output, target)
+            # if not self._deep_supervision:
+            output = [output]
+            l = self.loss(output[0], target[0])
+            # else:
+            # l = self.loss(output, target)
 
             if do_backprop:
                 l.backward()
