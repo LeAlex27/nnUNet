@@ -35,6 +35,7 @@ class CountingDiceLoss(torch.nn.Module):
                 pickle.dump(self.sizes, f)
 
     def forward(self, x, y, loss_mask=None):
+        print("counting dice loss:38")
         print(len(y))
         print(type(y[0]))
         # create gt density map

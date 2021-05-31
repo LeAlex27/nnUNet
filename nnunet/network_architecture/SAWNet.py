@@ -166,11 +166,13 @@ class SAWNet(Generic_UNet):
         print("SAWNet.py:166", self._deep_supervision, self.do_ds)
         if self._deep_supervision and self.do_ds:
             assert self.upscale_logits is False
+            print("list")
             return tuple([torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)]
                          + [torch.cat((i(j), i(k)), dim=1) for i, j, k in zip(list(self.upscale_logits_ops)[::-1],
                                                                               seg_outputs[:-1][::-1],
                                                                               saw_outputs[:-1][::-1])])
         else:
+            print("no list")
             return torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)
 
     @staticmethod
