@@ -582,6 +582,8 @@ class SegmentationNetwork(NeuralNetwork):
                 sx = self(x)
                 print(len(sx))
                 pred = self.inference_apply_nonlin(sx)
+                print(self.inference_apply_nonlin)
+                print(pred)
                 result_torch += 1 / num_results * pred
 
             if m == 1 and (1 in mirror_axes):
