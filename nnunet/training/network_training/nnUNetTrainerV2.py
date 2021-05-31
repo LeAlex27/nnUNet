@@ -42,13 +42,14 @@ class nnUNetTrainerV2(nnUNetTrainer):
     """
 
     def __init__(self, plans_file, fold, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
-                 unpack_data=True, deterministic=True, fp16=False):
+                 unpack_data=True, deterministic=True, fp16=False, deep_supervision=True):
         super().__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
         self.max_num_epochs = 1000
         self.initial_lr = 1e-2
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
+        self.deep_supervision = deep_supervision
 
         self.pin_memory = True
 
@@ -155,7 +156,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                                     len(self.net_num_pool_op_kernel_sizes),
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                                     dropout_op_kwargs,
-                                    net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
+                                    net_nonlin, net_nonlin_kwargs, self.deep_supervision, False, lambda x: x, InitWeights_He(1e-2),
                                     self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
         if torch.cuda.is_available():
             self.network.cuda()
@@ -248,8 +249,11 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 output = self.network(data)
                 print("nnUNetTrainerV2.py:249", target[0].size())
                 del data
-                output = [output]
-                l = self.loss(output[0], target[0])
+                if not self.deep_supervision:
+                    output = [output]
+                    l = self.loss(output[0], target[0])
+                else:
+                    l = self.loss(output, target)
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
@@ -260,11 +264,11 @@ class nnUNetTrainerV2(nnUNetTrainer):
         else:
             output = self.network(data)
             del data
-            # if not self._deep_supervision:
-            output = [output]
-            l = self.loss(output[0], target[0])
-            # else:
-            # l = self.loss(output, target)
+            if not self.deep_supervision:
+                output = [output]
+                l = self.loss(output[0], target[0])
+            else:
+                l = self.loss(output, target)
 
             if do_backprop:
                 l.backward()
