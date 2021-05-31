@@ -133,7 +133,7 @@ class SAWNet(Generic_UNet):
             self.apply(self.weightInitializer)
 
     def forward(self, x):
-        # print("SAWNet.py:123", x.size())
+        print("SAWNet.py:136", x.size())
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
@@ -170,6 +170,7 @@ class SAWNet(Generic_UNet):
                                                                               seg_outputs[:-1][::-1],
                                                                               saw_outputs[:-1][::-1])])
         else:
+            print("SAWNet.py:173", seg_outputs[-1].size(), saw_outputs[-1].size())
             return torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)
 
     @staticmethod
