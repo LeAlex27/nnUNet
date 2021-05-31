@@ -682,7 +682,7 @@ class nnUNetTrainer(NetworkTrainer):
         self.network.train(current_mode)
 
     def run_online_evaluation(self, output, target):
-        print("nnUNetTrainer.py", output.shape(), target.shape())
+        print("nnUNetTrainer.py", output.size(), target.size())
 
         with torch.no_grad():
             num_classes = output.shape[1]
