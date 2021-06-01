@@ -247,7 +247,6 @@ class nnUNetTrainerV2(nnUNetTrainer):
         if self.fp16:
             with autocast():
                 output = self.network(data)
-                print("nnUNetTrainerV2.py:249", target[0].size())
                 del data
                 if not self.deep_supervision:
                     output = [output]
