@@ -10,14 +10,18 @@ import matplotlib.pyplot as plt
 
 
 class CountingDiceLoss(torch.nn.Module):
-    def __init__(self, output_folder=None):
+    def __init__(self, label_loss, density_map_loss, count_loss, output_folder=None):
         super(CountingDiceLoss, self).__init__()
         self.loss = SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})
-        self.loss_density_map = torch.nn.MSELoss() # WeightedRobustCrossEntropyLoss([0.001, 0.999])
+        self.loss_density_map = torch.nn.MSELoss()  # WeightedRobustCrossEntropyLoss([0.001, 0.999])
 
         self.loss_n_ma = torch.nn.MSELoss()
         self.n = 0
         self.output_folder = output_folder
+
+        self.label_loss = label_loss
+        self.density_map_loss = density_map_loss
+        self.count_loss = count_loss
 
         self.l_ = []
         self.l_dm = []
@@ -46,17 +50,18 @@ class CountingDiceLoss(torch.nn.Module):
         y_n_ma = torch.sum(dm)
         x_n_ma = torch.sum(x[:, 2])  # -1: = 3:
 
-        # print("sum x:", x_n_ma)
-        # print("sum dm:", y_n_ma)
-
         l_ = self.loss(x[:, :2], y)
-        #print("l_: {:e}".format(l_))
         l_dm = self.loss_density_map(x[:, 2:], dm)
-        #print("l_dm: {:e}".format(l_dm))
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
-        # print("l_n:", l_n)
+        l_total = torch.tensor(0)
+        if self.label_loss:
+            l_total += l_
+        if self.density_map_loss:
+            l_total += l_dm
+        if self.count_loss:
+            l_total += l_n
 
-        l_total = l_dm + l_
+        print("total loss:", l_total)
 
         self.l_.append(l_.detach().cpu().numpy())
         self.l_dm.append(l_dm.detach().cpu().numpy())
