@@ -61,6 +61,16 @@ class CountingDiceLoss(torch.nn.Module):
         if self.count_loss:
             l_total += l_n
 
+        if torch.isinf(l_total) or torch.isnan(l_total):
+            print("encountered inf/nan:")
+            print("l_:", l_)
+            print("l_dm:", l_dm)
+            print("l_n:", l_n)
+            print("l_total:", l_total)
+
+            print("x:", torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
+            print("y:", torch.sum(torch.isinf(y)), torch.sum(torch.isnan(y)))
+
         print("total loss:", l_total)
 
         self.l_.append(l_.detach().cpu().numpy())
