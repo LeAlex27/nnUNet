@@ -53,7 +53,7 @@ class CountingDiceLoss(torch.nn.Module):
         l_ = self.loss(x[:, :2], y)
         l_dm = self.loss_density_map(x[:, 2:], dm)
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
-        l_total = torch.tensor(0).cuda()
+        l_total = torch.tensor(0.0).cuda()
         if self.label_loss:
             l_total += l_
         if self.density_map_loss:
