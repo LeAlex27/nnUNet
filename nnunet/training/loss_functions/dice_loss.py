@@ -191,6 +191,12 @@ class SoftDiceLoss(nn.Module):
                 dc = dc[:, 1:]
         dc = dc.mean()
 
+        if torch.isinf(dc) or torch.isnan(dc):
+            print("dice loss: encountered inf/nan:")
+            print("dc:", dc)
+            print("tp, fp, fn:", tp, fp, fn)
+            print("nominator/denominator:", nominator, denominator)
+
         return -dc
 
 
