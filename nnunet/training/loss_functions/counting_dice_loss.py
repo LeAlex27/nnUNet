@@ -46,6 +46,8 @@ class CountingDiceLoss(torch.nn.Module):
             dm[i, 0] = self.sharpen(y_cpu[i, 0])
             # dm[i, 0] = self.pixel(y_cpu[i, 0])
         # self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
+        print("device count:", torch.cuda.device_count())
+        print("current device:", torch.cuda.current_device())
         dm = torch.from_numpy(dm).cuda()
         y_n_ma = torch.sum(dm)
         x_n_ma = torch.sum(x[:, 2])  # -1: = 3:
