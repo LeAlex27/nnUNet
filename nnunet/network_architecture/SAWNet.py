@@ -162,6 +162,9 @@ class SAWNet(Generic_UNet):
             sau_x = self.conv_blocks_w[u](sau_x)
             saw_outputs.append(self.w_outputs[u](sau_x))
 
+        print(self.final_nonlin, type(self.final_nonlin), self.final_nonlin.__name__)
+        print(self.inference_apply_nonlin, type(self.inference_apply_nonlin), self.inference_apply_nonlin.__name__)
+
         if self._deep_supervision and self.do_ds:
             assert self.upscale_logits is False
             return tuple([torch.cat((seg_outputs[-1], saw_outputs[-1]), dim=1)]
