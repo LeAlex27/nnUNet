@@ -15,8 +15,8 @@ class sawNetTrainer(nnUNetTrainerV2):
                                             unpack_data, deterministic, fp16, False)
         self.loss = CountingDiceLoss(label_loss=True, density_map_loss=True, count_loss=False,
                                      output_folder=self.output_folder)
-        self.optimizer = 'sgd'
-        self.max_num_epochs = 200
+        self.optimizer = 'adam'
+        self.max_num_epochs = 350
         self.initial_lr = 1e-3
 
     def initialize_network(self):
