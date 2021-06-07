@@ -16,8 +16,9 @@ class sawNetTrainer(nnUNetTrainerV2):
         self.loss = CountingDiceLoss(label_loss=True, density_map_loss=True, count_loss=False,
                                      output_folder=self.output_folder)
         self.optimizer = 'adam'
-        self.max_num_epochs = 10
+        self.max_num_epochs = 100
         self.initial_lr = 1e-3
+        self.use_lr_scheduler = False
 
     def initialize_network(self):
         """
@@ -63,23 +64,24 @@ class sawNetTrainer(nnUNetTrainerV2):
         elif self.optimizer == 'adam':
             self.optimizer = torch.optim.Adam(self.network.parameters(), self.initial_lr)
 
-            def cosine_wwr(step):
-                t_mul = 2.0
-                m_mul = 1.0
-                alpha = 0.0
-                first_decay_steps = 50
+            if self.use_lr_scheduler:
+                def cosine_wwr(step):
+                    t_mul = 2.0
+                    m_mul = 1.0
+                    alpha = 0.0
+                    first_decay_steps = 50
 
-                global_step_recomp = step
-                completed_fraction = global_step_recomp / first_decay_steps
+                    global_step_recomp = step
+                    completed_fraction = global_step_recomp / first_decay_steps
 
-                i_restart = np.floor(np.log(1.0 - completed_fraction * (1.0 - t_mul)) / np.log(t_mul))
-                sum_r = (1.0 - t_mul ** i_restart) / (1.0 - t_mul)
-                completed_fraction = (completed_fraction - sum_r) / t_mul ** i_restart
+                    i_restart = np.floor(np.log(1.0 - completed_fraction * (1.0 - t_mul)) / np.log(t_mul))
+                    sum_r = (1.0 - t_mul ** i_restart) / (1.0 - t_mul)
+                    completed_fraction = (completed_fraction - sum_r) / t_mul ** i_restart
 
-                m_fac = m_mul ** i_restart
-                cosine_decayed = 0.5 * m_fac * (1.0 + np.cos(np.pi * completed_fraction))
-                decayed = (1 - alpha) * cosine_decayed + alpha
+                    m_fac = m_mul ** i_restart
+                    cosine_decayed = 0.5 * m_fac * (1.0 + np.cos(np.pi * completed_fraction))
+                    decayed = (1 - alpha) * cosine_decayed + alpha
 
-                return decayed
+                    return decayed
 
-            # self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, cosine_wwr)
+                self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, cosine_wwr)
