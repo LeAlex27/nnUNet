@@ -16,7 +16,7 @@ class sawNetTrainer(nnUNetTrainerV2):
         self.loss = CountingDiceLoss(label_loss=True, density_map_loss=True, count_loss=False,
                                      output_folder=self.output_folder)
         self.optimizer = 'adam'
-        self.max_num_epochs = 350
+        self.max_num_epochs = 5
         self.initial_lr = 1e-3
 
     def initialize_network(self):
@@ -54,7 +54,6 @@ class sawNetTrainer(nnUNetTrainerV2):
                               self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
         if torch.cuda.is_available():
             self.network.cuda()
-        # self.network.inference_apply_nonlin = softmax_helper
 
     def initialize_optimizer_and_scheduler(self):
         assert self.network is not None, "self.initialize_network must be called first"
