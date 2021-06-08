@@ -142,7 +142,7 @@ class SAWNet(Generic_UNet):
         for d in range(len(self.conv_blocks_context) - 1):
             x = self.conv_blocks_context[d](x)
             if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
-                print("SAWNet.py:145: encountered inf/nan in block d:{}:".format(d))
+                print("SAWNet.py:145: encountered inf/nan in block d: {}:".format(d))
                 print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
                 exit(1)
             skips.append(x)

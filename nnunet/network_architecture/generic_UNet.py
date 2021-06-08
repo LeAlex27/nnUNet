@@ -63,8 +63,17 @@ class ConvDropoutNormNonlin(nn.Module):
 
     def forward(self, x):
         x = self.conv(x)
+        if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
+            print("generic_UNet.py:67: encountered inf/nan in")
+            print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
+            exit(1)
         if self.dropout is not None:
             x = self.dropout(x)
+
+            if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
+                print("generic_UNet.py:74: encountered inf/nan")
+                print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
+                exit(1)
         return self.lrelu(self.instnorm(x))
 
 
