@@ -15,7 +15,7 @@ class sawNetTrainer(nnUNetTrainerV2):
                                             unpack_data, deterministic, fp16, False)
         self.optimizer = 'adam'
         self.max_num_epochs = 100
-        self.initial_lr = 1e-3
+        self.initial_lr = 1e-4
         self.use_lr_scheduler = False
         label_loss = True
         density_map_loss = True
