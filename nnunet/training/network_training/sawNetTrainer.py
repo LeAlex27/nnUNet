@@ -19,7 +19,7 @@ class sawNetTrainer(nnUNetTrainerV2):
         self.use_lr_scheduler = False
         label_loss = True
         density_map_loss = True
-        count_loss = False
+        count_loss = True
 
         self.loss = CountingDiceLoss(label_loss=label_loss, density_map_loss=density_map_loss, count_loss=count_loss,
                                      output_folder=self.output_folder)
