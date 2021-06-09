@@ -70,6 +70,7 @@ class CountingDiceLoss(torch.nn.Module):
 
             print("x:", torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
             print("y:", torch.sum(torch.isinf(y)), torch.sum(torch.isnan(y)))
+            exit(1)
 
         print("total loss:", l_total)
 
