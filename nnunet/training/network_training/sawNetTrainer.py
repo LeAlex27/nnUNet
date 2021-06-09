@@ -13,12 +13,21 @@ class sawNetTrainer(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainer, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage,
                                             unpack_data, deterministic, fp16, False)
-        self.loss = CountingDiceLoss(label_loss=True, density_map_loss=True, count_loss=True,
-                                     output_folder=self.output_folder)
         self.optimizer = 'adam'
         self.max_num_epochs = 100
         self.initial_lr = 1e-3
         self.use_lr_scheduler = False
+        label_loss = True
+        density_map_loss = True
+        count_loss = False
+
+        self.loss = CountingDiceLoss(label_loss=label_loss, density_map_loss=density_map_loss, count_loss=count_loss,
+                                     output_folder=self.output_folder)
+
+        print("sawNetTrainer:")
+        print("optimizer:", self.optimizer)
+        print("epochs:", self.max_num_epochs)
+        print("losses: ", label_loss, density_map_loss, count_loss)
 
     def initialize_network(self):
         """
@@ -46,7 +55,7 @@ class sawNetTrainer(nnUNetTrainerV2):
         dropout_op_kwargs = {'p': 0, 'inplace': True}
         net_nonlin = nn.LeakyReLU
         net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
-        print("sawNetTrainer.py:46", self.net_num_pool_op_kernel_sizes)
+        print("sawNetTrainer.py:58", self.net_num_pool_op_kernel_sizes)
         self.network = SAWNet(self.num_input_channels, self.base_num_features, self.num_classes,
                               len(self.net_num_pool_op_kernel_sizes),
                               self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
