@@ -14,7 +14,7 @@ class sawNetTrainer(nnUNetTrainerV2):
         super(sawNetTrainer, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage,
                                             unpack_data, deterministic, fp16, False)
         self.optimizer = 'adam'
-        self.max_num_epochs = 500
+        self.max_num_epochs = 1000
         self.initial_lr = 1e-4
         self.use_lr_scheduler = False
         label_loss = True
