@@ -17,7 +17,7 @@ class sawNetTrainer(nnUNetTrainerV2):
         self.max_num_epochs = 300
         self.initial_lr = 1e-3
         self.use_lr_scheduler = False
-        label_loss = True
+        label_loss = False
         density_map_loss = True
         count_loss = False
 
