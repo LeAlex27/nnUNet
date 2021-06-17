@@ -14,12 +14,12 @@ class sawNetTrainer(nnUNetTrainerV2):
         super(sawNetTrainer, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage,
                                             unpack_data, deterministic, fp16, False)
         self.optimizer = 'adam'
-        self.max_num_epochs = 300
-        self.initial_lr = 1e-4
+        self.max_num_epochs = 600
+        self.initial_lr = 1e-3
         self.use_lr_scheduler = False
-        label_loss = False
+        label_loss = True
         density_map_loss = True
-        count_loss = True
+        count_loss = False
 
         self.loss = CountingDiceLoss(label_loss=label_loss, density_map_loss=density_map_loss, count_loss=count_loss,
                                      output_folder=self.output_folder)
