@@ -6,7 +6,6 @@ from nnunet.network_architecture.initialization import InitWeights_He
 from nnunet.utilities.nd_softmax import softmax_helper
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
 from torch.cuda.amp import autocast
-from nnunet.training.loss_functions.dice_loss import SoftDiceLoss
 from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
 import pickle
 
