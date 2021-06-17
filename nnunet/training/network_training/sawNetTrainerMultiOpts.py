@@ -20,7 +20,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainerMultiOpts, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice,
                                                      stage, unpack_data, deterministic, fp16, False)
-        self.max_num_epochs = 2
+        self.max_num_epochs = 1
         self.loss = None
         self.opt_loss = []
 
@@ -35,9 +35,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
     def __del__(self):
         if self.output_folder is not None:
             with open(self.output_folder + '/losses.pickle', 'wb') as f:
-                pickle.dump(self.l_, f)
-                pickle.dump(self.l_dm, f)
-                # pickle.dump(self.l_n, f)
+                for i in range(len(self.pickle_losses)):
+                    pickle.dump(self.pickle_losses[i], f)
 
     def initialize_network(self):
         """
