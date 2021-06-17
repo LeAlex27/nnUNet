@@ -1,15 +1,18 @@
 import torch
 from torch import nn
+from time import time
 from nnunet.training.network_training.nnUNetTrainerV2 import nnUNetTrainerV2
 from nnunet.network_architecture.SAWNet import SAWNet
 from nnunet.network_architecture.initialization import InitWeights_He
 from nnunet.utilities.nd_softmax import softmax_helper
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
-from torch.cuda.amp import autocast
+from torch.cuda.amp import autocast, GradScaler
 from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
 from nnunet.training.learning_rate.poly_lr import poly_lr
 import numpy as np
 import pickle
+from collections import OrderedDict
+from torch.optim.lr_scheduler import _LRScheduler
 
 
 class sawNetTrainerMultiOpts(nnUNetTrainerV2):
@@ -98,6 +101,38 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             opt.param_groups[0]['lr'] = poly_lr(ep, self.max_num_epochs, self.initial_lrs[idx], 0.9)
             self.print_to_log_file("lr:", np.round(opt.param_groups[0]['lr'], decimals=6))
 
+    def save_checkpoint(self, fname, save_optimizer=True):
+        start_time = time()
+        state_dict = self.network.state_dict()
+        for key in state_dict.keys():
+            state_dict[key] = state_dict[key].cpu()
+        lr_sched_state_dct = None
+        if self.lr_scheduler is not None and hasattr(self.lr_scheduler,
+                                                     'state_dict'):  # not isinstance(self.lr_scheduler, lr_scheduler.ReduceLROnPlateau):
+            lr_sched_state_dct = self.lr_scheduler.state_dict()
+            # WTF is this!?
+            # for key in lr_sched_state_dct.keys():
+            #    lr_sched_state_dct[key] = lr_sched_state_dct[key]
+        if save_optimizer:
+            optimizer_state_dict = [opt.state_dict() for opt, _ in self.opt_loss]
+        else:
+            optimizer_state_dict = None
+
+        self.print_to_log_file("saving checkpoint...")
+        save_this = {
+            'epoch': self.epoch + 1,
+            'state_dict': state_dict,
+            'optimizer_state_dict': optimizer_state_dict,
+            'lr_scheduler_state_dict': lr_sched_state_dct,
+            'plot_stuff': (self.all_tr_losses, self.all_val_losses, self.all_val_losses_tr_mode,
+                           self.all_val_eval_metrics),
+            'best_stuff' : (self.best_epoch_based_on_MA_tr_loss, self.best_MA_tr_loss_for_patience, self.best_val_eval_criterion_MA)}
+        if self.amp_grad_scaler is not None:
+            save_this['amp_grad_scaler'] = self.amp_grad_scaler.state_dict()
+
+        torch.save(save_this, fname)
+        self.print_to_log_file("done, saving took %.2f seconds" % (time() - start_time))
+
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
         # with torch.autograd.set_detect_anomaly(True):
         """
@@ -146,3 +181,67 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         del target
 
         return l.detach().cpu().numpy()
+
+    def load_checkpoint_ram(self, checkpoint, train=True):
+        """
+        used for if the checkpoint is already in ram
+        :param checkpoint:
+        :param train:
+        :return:
+        """
+        if not self.was_initialized:
+            self.initialize(train)
+
+        new_state_dict = OrderedDict()
+        curr_state_dict_keys = list(self.network.state_dict().keys())
+        # if state dict comes form nn.DataParallel but we use non-parallel model here then the state dict keys do not
+        # match. Use heuristic to make it match
+        for k, value in checkpoint['state_dict'].items():
+            key = k
+            if key not in curr_state_dict_keys and key.startswith('module.'):
+                key = key[7:]
+            new_state_dict[key] = value
+
+        if self.fp16:
+            self._maybe_init_amp()
+            if 'amp_grad_scaler' in checkpoint.keys():
+                self.amp_grad_scaler.load_state_dict(checkpoint['amp_grad_scaler'])
+
+        self.network.load_state_dict(new_state_dict)
+        self.epoch = checkpoint['epoch']
+        if train:
+            optimizer_state_dict = checkpoint['optimizer_state_dict']
+            if optimizer_state_dict is not None:
+                for idx, (opt, _) in enumerate(self.opt_loss):
+                    if optimizer_state_dict[idx] is not None:
+                        opt.load_state_dict(optimizer_state_dict[idx])
+
+            if self.lr_scheduler is not None and hasattr(self.lr_scheduler, 'load_state_dict') and checkpoint[
+                'lr_scheduler_state_dict'] is not None:
+                self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler_state_dict'])
+
+            if issubclass(self.lr_scheduler.__class__, _LRScheduler):
+                self.lr_scheduler.step(self.epoch)
+
+        self.all_tr_losses, self.all_val_losses, self.all_val_losses_tr_mode, self.all_val_eval_metrics = checkpoint[
+            'plot_stuff']
+
+        # load best loss (if present)
+        if 'best_stuff' in checkpoint.keys():
+            self.best_epoch_based_on_MA_tr_loss, self.best_MA_tr_loss_for_patience, self.best_val_eval_criterion_MA = checkpoint[
+                'best_stuff']
+
+        # after the training is done, the epoch is incremented one more time in my old code. This results in
+        # self.epoch = 1001 for old trained models when the epoch is actually 1000. This causes issues because
+        # len(self.all_tr_losses) = 1000 and the plot function will fail. We can easily detect and correct that here
+        if self.epoch != len(self.all_tr_losses):
+            self.print_to_log_file("WARNING in loading checkpoint: self.epoch != len(self.all_tr_losses). This is "
+                                   "due to an old bug and should only appear when you are loading old models. New "
+                                   "models should have this fixed! self.epoch is now set to len(self.all_tr_losses)")
+            self.epoch = len(self.all_tr_losses)
+            self.all_tr_losses = self.all_tr_losses[:self.epoch]
+            self.all_val_losses = self.all_val_losses[:self.epoch]
+            self.all_val_losses_tr_mode = self.all_val_losses_tr_mode[:self.epoch]
+            self.all_val_eval_metrics = self.all_val_eval_metrics[:self.epoch]
+
+        self._maybe_init_amp()
