@@ -127,8 +127,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             opt.zero_grad()
 
             with autocast():
-                output = self.network(data)
-                l = loss(output, target[0])
+                output = [self.network(data)]
+                l = loss(output[0], target[0])
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
