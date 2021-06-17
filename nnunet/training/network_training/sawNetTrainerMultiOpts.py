@@ -7,6 +7,8 @@ from nnunet.utilities.nd_softmax import softmax_helper
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
 from torch.cuda.amp import autocast
 from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
+from nnunet.training.learning_rate.poly_lr import poly_lr
+import numpy as np
 import pickle
 
 
@@ -19,6 +21,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.loss = None
         self.opt_loss = []
 
+        self.initial_lr = None
+        self.initial_lrs = [1e-3, 1e-4]
         self.pickle_losses = []
 
         print("sawNetTrainerTwoOpts:")
@@ -69,11 +73,30 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             self.network.cuda()
 
     def initialize_optimizer_and_scheduler(self):
-        self.opt_loss.append((torch.optim.Adam(self.network.parameters(), 1e-3),
+        self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[0]),
                               CountingDiceLoss(True, False, False, None)))
-        self.opt_loss.append((torch.optim.Adam(self.network.parameters(), 1e-4),
+        self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[1]),
                               CountingDiceLoss(False, True, False, None)))
         self.pickle_losses = [[], []]
+
+    def maybe_update_lr(self, epoch=None):
+        """
+        if epoch is not None we overwrite epoch. Else we use epoch = self.epoch + 1
+
+        (maybe_update_lr is called in on_epoch_end which is called before epoch is incremented.
+        herefore we need to do +1 here)
+
+        :param epoch:
+        :return:
+        """
+        if epoch is None:
+            ep = self.epoch + 1
+        else:
+            ep = epoch
+
+        for idx, (opt, _) in enumerate(self.opt_loss):
+            opt.param_groups[0]['lr'] = poly_lr(ep, self.max_num_epochs, self.initial_lrs[idx], 0.9)
+            self.print_to_log_file("lr:", np.round(opt.param_groups[0]['lr'], decimals=6))
 
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
         # with torch.autograd.set_detect_anomaly(True):
