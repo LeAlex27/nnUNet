@@ -128,7 +128,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
             with autocast():
                 output = self.network(data)
-                del data
                 l = loss(output, target[0])
 
             if do_backprop:
@@ -139,6 +138,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 self.amp_grad_scaler.update()
 
             self.pickle_losses[idx].append(l.detach().cpu().numpy())
+        del data
 
         if run_online_evaluation:
             self.run_online_evaluation(output, target)
