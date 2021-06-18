@@ -13,6 +13,7 @@ import numpy as np
 import pickle
 from collections import OrderedDict
 from torch.optim.lr_scheduler import _LRScheduler
+from batchgenerators.utilities.file_and_folder_operations import *
 
 
 class sawNetTrainerMultiOpts(nnUNetTrainerV2):
