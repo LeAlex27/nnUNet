@@ -57,10 +57,12 @@ class CountingDiceLoss(torch.nn.Module):
             l_dm = self.loss_density_map(x[:, 2:], dm)
             if self.density_map_loss:
                 l_total += l_dm
+                self.l_dm.append(l_dm.detach().cpu().numpy())
 
             l_n = self.loss_n_ma(x_n_ma, y_n_ma)
             if self.count_loss:
                 l_total += l_n
+                self.l_n.append(l_n.detach().cpu().numpy())
 
         l_ = self.loss(x[:, :2], y)
 
@@ -72,6 +74,7 @@ class CountingDiceLoss(torch.nn.Module):
             print("l_:", l_)
             if self.density_map_loss:
                 print("l_dm:", l_dm)
+            if self.count_loss:
                 print("l_n:", l_n)
             print("l_total:", l_total)
 
@@ -82,9 +85,7 @@ class CountingDiceLoss(torch.nn.Module):
         print("total loss:", l_total)
 
         self.l_.append(l_.detach().cpu().numpy())
-        self.l_dm.append(l_dm.detach().cpu().numpy())
-        self.l_n.append(l_n.detach().cpu().numpy())
-        self.l_total.append(l_.detach().cpu().numpy())
+        self.l_total.append(l_total.detach().cpu().numpy())
         self.sizes.append(list(x.size()))
 
         return l_total
