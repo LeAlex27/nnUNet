@@ -39,33 +39,38 @@ class CountingDiceLoss(torch.nn.Module):
                 pickle.dump(self.sizes, f)
 
     def forward(self, x, y, loss_mask=None):
-        # create gt density map
-        y_cpu = y.cpu().numpy()
-        dm = np.empty_like(y_cpu[:, 0:1])
-        for i in range(y.shape[0]):
-            dm[i, 0] = self.sharpen(y_cpu[i, 0])
-            # dm[i, 0] = self.pixel(y_cpu[i, 0])
-        # self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
-        dm = torch.from_numpy(dm).cuda()
-        y_n_ma = torch.sum(dm)
-        x_n_ma = torch.sum(x[:, 2])  # -1: = 3:
-        print("y_n_ma/x_n_ma:", y_n_ma, x_n_ma)
+        l_total = torch.tensor(0.0).cuda()
+
+        if self.density_map_loss:
+            # create gt density map
+            y_cpu = y.cpu().numpy()
+            dm = np.empty_like(y_cpu[:, 0:1])
+            for i in range(y.shape[0]):
+                dm[i, 0] = self.sharpen(y_cpu[i, 0])
+                # dm[i, 0] = self.pixel(y_cpu[i, 0])
+            # self.save_img(dm, '/cluster/husvogt/debug_imgs/{:04d}_{:03d}.png')
+            dm = torch.from_numpy(dm).cuda()
+            y_n_ma = torch.sum(dm)
+            x_n_ma = torch.sum(x[:, 2])  # -1: = 3:
+            print("y_n_ma/x_n_ma:", y_n_ma, x_n_ma)
+
+            l_dm = self.loss_density_map(x[:, 2:], dm)
+            if self.density_map_loss:
+                l_total += l_dm
 
         l_ = self.loss(x[:, :2], y)
-        l_dm = self.loss_density_map(x[:, 2:], dm)
         l_n = self.loss_n_ma(x_n_ma, y_n_ma)
-        l_total = torch.tensor(0.0).cuda()
+
         if self.label_loss:
             l_total += l_
-        if self.density_map_loss:
-            l_total += l_dm
         if self.count_loss:
             l_total += l_n
 
         if torch.isinf(l_total) or torch.isnan(l_total):
             print("encountered inf/nan:")
             print("l_:", l_)
-            print("l_dm:", l_dm)
+            if self.density_map_loss:
+                print("l_dm:", l_dm)
             print("l_n:", l_n)
             print("l_total:", l_total)
 
