@@ -26,7 +26,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.opt_loss = []
 
         self.initial_lr = None
-        self.initial_lrs = [1e-3, 1e-4]
+        self.initial_lrs = [5e-4, 1e-4, 1e-4]
         self.pickle_losses = []
 
         print("sawNetTrainerTwoOpts:")
@@ -80,7 +80,9 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                               CountingDiceLoss(True, False, False, None)))
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[1]),
                               CountingDiceLoss(False, True, False, None)))
-        self.pickle_losses = [[], []]
+        self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
+                              CountingDiceLoss(False, False, True, None)))
+        self.pickle_losses = [[] for _ in range(len(self.opt_loss))]
 
     def maybe_update_lr(self, epoch=None):
         """
