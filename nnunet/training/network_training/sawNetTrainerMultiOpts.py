@@ -42,7 +42,7 @@ class DensityMapTransform(AbstractTransform):
         pass
 
     def __call__(self, **data_dict):
-        print("sawNetTrainerMultiOpts.py:46")
+        #print("sawNetTrainerMultiOpts.py:46")
         breakpoint()
         print(data_dict.keys())
         #y = data_dict['seg']
