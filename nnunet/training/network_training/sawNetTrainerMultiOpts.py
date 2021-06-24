@@ -143,6 +143,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             else:
                 pass
 
+            breakpoint()
             self.initialize_network()
             self.initialize_optimizer_and_scheduler()
 
@@ -173,6 +174,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             self.network.cuda()
 
     def initialize_optimizer_and_scheduler(self):
+        print("sawNetTrainerMultiOpts.py:176 inititalize optimizer and scheduler")
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[0]),
                               # CountingDiceLoss(True, False, False, None)))
                               SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})))
@@ -226,7 +228,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.print_to_log_file("done, saving took %.2f seconds" % (time() - start_time))
 
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
-        print("sawNetTrainerMultiOpts.py:229 run iteration")
+        print("sawNetTrainerMultiOpts.py:230 run iteration")
         # with torch.autograd.set_detect_anomaly(True):
         """
         gradient clipping improves training stability
