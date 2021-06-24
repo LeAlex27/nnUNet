@@ -42,8 +42,8 @@ class DensityMapTransform(AbstractTransform):
         #print("sawNetTrainerMultiOpts.py:46")
         #breakpoint()
         #print(data_dict.keys())
-        #y = data_dict['seg']
-        #new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
+        y = data_dict['seg']
+        new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
         #new_y[:, :1] = y
         #for i in range(y.shape[0]):
         #    new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
