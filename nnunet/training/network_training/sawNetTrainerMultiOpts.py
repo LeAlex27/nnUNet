@@ -45,6 +45,7 @@ class DensityMapTransform(AbstractTransform):
         y = data_dict['seg']
         print("sawNetTrainerMultiOpts.py:46")
         print(y.shape)
+        breakpoint()
         new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
         new_y[:, :1] = y
         for i in range(y.shape[0]):
