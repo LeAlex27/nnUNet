@@ -512,7 +512,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         tr_transforms.append(NumpyToTensor(['data', 'target'], 'float'))
         tr_transforms = Compose(tr_transforms)
 
-        batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, 1, # params.get('num_threads'),
+        batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, params.get('num_threads'),
                                                       params.get("num_cached_per_thread"),
                                                       seeds=seeds_train, pin_memory=pin_memory)
 
