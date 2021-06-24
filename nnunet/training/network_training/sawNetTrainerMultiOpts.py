@@ -143,7 +143,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             else:
                 pass
 
-            breakpoint()
             self.initialize_network()
             self.initialize_optimizer_and_scheduler()
 
