@@ -14,6 +14,44 @@ import pickle
 from collections import OrderedDict
 from torch.optim.lr_scheduler import _LRScheduler
 from batchgenerators.utilities.file_and_folder_operations import *
+from nnunet.training.dataloading.dataset_loading import load_dataset
+from nnunet.network_architecture.neural_network import SegmentationNetwork
+from nnunet.training.dataloading.dataset_loading import unpack_dataset
+from batchgenerators.dataloading import MultiThreadedAugmenter
+from nnunet.training.loss_functions.dice_loss import SoftDiceLoss
+
+from batchgenerators.transforms import DataChannelSelectionTransform, SegChannelSelectionTransform, SpatialTransform, \
+    GammaTransform, MirrorTransform, Compose
+from batchgenerators.transforms.color_transforms import BrightnessMultiplicativeTransform, \
+    ContrastAugmentationTransform, BrightnessTransform
+from batchgenerators.transforms.noise_transforms import GaussianNoiseTransform, GaussianBlurTransform
+from batchgenerators.transforms.resample_transforms import SimulateLowResolutionTransform
+from batchgenerators.transforms.utility_transforms import RemoveLabelTransform, RenameTransform, NumpyToTensor
+from nnunet.training.data_augmentation.custom_transforms import Convert3DTo2DTransform, Convert2DTo3DTransform, \
+    MaskTransform, ConvertSegmentationToRegionsTransform
+from nnunet.training.data_augmentation.default_data_augmentation import default_3D_augmentation_params
+from nnunet.training.data_augmentation.downsampling import DownsampleSegForDSTransform3, DownsampleSegForDSTransform2
+from nnunet.training.data_augmentation.pyramid_augmentations import MoveSegAsOneHotToData, \
+    ApplyRandomBinaryOperatorTransform, \
+    RemoveRandomConnectedComponentFromOneHotEncodingTransform
+from batchgenerators.transforms.abstract_transforms import AbstractTransform
+
+
+class DensityMapTransform(AbstractTransform):
+    def __init__(self):
+        pass
+
+    def __call__(self, **data_dict):
+        y = data_dict['seg']
+        print("sawNetTrainerMultiOpts.py:45")
+        print(type(y))
+        print(y.shape)
+        new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
+        new_y[:, 0] = y
+        for i in range(y.shape[0]):
+            new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
+        data_dict['seg'] = new_y
+        return data_dict
 
 
 class sawNetTrainerMultiOpts(nnUNetTrainerV2):
@@ -39,27 +77,85 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 for i in range(len(self.pickle_losses)):
                     pickle.dump(self.pickle_losses[i], f)
 
-    def initialize_network(self):
+    def initialize(self, training=True, force_load_plans=False):
         """
-        - momentum 0.99
-        - SGD instead of Adam
-        - self.lr_scheduler = None because we do poly_lr
-        - deep supervision = True
-        - i am sure I forgot something here
+        - replaced get_default_augmentation with get_moreDA_augmentation
+        - enforce to only run this code once
+        - loss function wrapper for deep supervision
 
-        Known issue: forgot to set neg_slope=0 in InitWeights_He; should not make a difference though
+        :param training:
+        :param force_load_plans:
         :return:
         """
-        assert self.threeD is False
-        if self.threeD:
-            conv_op = nn.Conv3d
-            dropout_op = nn.Dropout3d
-            norm_op = nn.InstanceNorm3d
+        if not self.was_initialized:
+            maybe_mkdir_p(self.output_folder)
 
+            if force_load_plans or (self.plans is None):
+                self.load_plans_file()
+
+            self.process_plans(self.plans)
+
+            self.setup_DA_params()
+
+            ################# Here we wrap the loss for deep supervision ############
+            # we need to know the number of outputs of the network
+            net_numpool = len(self.net_num_pool_op_kernel_sizes)
+
+            # we give each output a weight which decreases exponentially (division by 2) as the resolution decreases
+            # this gives higher resolution outputs more weight in the loss
+            weights = np.array([1 / (2 ** i) for i in range(net_numpool)])
+
+            # we don't use the lowest 2 outputs. Normalize weights so that they sum to 1
+            mask = np.array([True] + [True if i < net_numpool - 1 else False for i in range(1, net_numpool)])
+            weights[~mask] = 0
+            weights = weights / weights.sum()
+            self.ds_loss_weights = weights
+            # now wrap the loss
+            # self.loss = MultipleOutputLoss2(self.loss, self.ds_loss_weights)
+            ################# END ###################
+
+            self.folder_with_preprocessed_data = join(self.dataset_directory, self.plans['data_identifier'] +
+                                                      "_stage%d" % self.stage)
+            if training:
+                self.dl_tr, self.dl_val = self.get_basic_generators()
+                if self.unpack_data:
+                    print("unpacking dataset")
+                    unpack_dataset(self.folder_with_preprocessed_data)
+                    print("done")
+                else:
+                    print(
+                        "INFO: Not unpacking data! Training may be slow due to that. Pray you are not using 2d or you "
+                        "will wait all winter for your model to finish!")
+
+                self.tr_gen, self.val_gen = self.get_moreDA_augmentation_depth_map(
+                    self.dl_tr, self.dl_val,
+                    self.data_aug_params[
+                        'patch_size_for_spatialtransform'],
+                    self.data_aug_params,
+                    deep_supervision_scales=self.deep_supervision_scales,
+                    pin_memory=self.pin_memory,
+                    use_nondetMultiThreadedAugmenter=False
+                )
+                self.print_to_log_file("TRAINING KEYS:\n %s" % (str(self.dataset_tr.keys())),
+                                       also_print_to_console=False)
+                self.print_to_log_file("VALIDATION KEYS:\n %s" % (str(self.dataset_val.keys())),
+                                       also_print_to_console=False)
+            else:
+                pass
+
+            self.initialize_network()
+            self.initialize_optimizer_and_scheduler()
+
+            assert isinstance(self.network, (SegmentationNetwork, nn.DataParallel))
         else:
-            conv_op = nn.Conv2d
-            dropout_op = nn.Dropout2d
-            norm_op = nn.InstanceNorm2d
+            self.print_to_log_file('self.was_initialized is True, not running self.initialize again')
+        self.was_initialized = True
+
+    def initialize_network(self):
+        assert self.threeD is False
+        conv_op = nn.Conv2d
+        dropout_op = nn.Dropout2d
+        norm_op = nn.InstanceNorm2d
 
         norm_op_kwargs = {'eps': 1e-5, 'affine': True}
         dropout_op_kwargs = {'p': 0, 'inplace': True}
@@ -77,23 +173,16 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
     def initialize_optimizer_and_scheduler(self):
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[0]),
-                              CountingDiceLoss(True, False, False, None)))
+                              # CountingDiceLoss(True, False, False, None)))
+                              SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})))
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[1]),
-                              CountingDiceLoss(False, True, True, None)))
+                              # CountingDiceLoss(False, True, True, None)))
+                              torch.nn.MSELoss()))
         # self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
         #                       CountingDiceLoss(False, False, True, None)))
         self.pickle_losses = [[] for _ in range(len(self.opt_loss))]
 
     def maybe_update_lr(self, epoch=None):
-        """
-        if epoch is not None we overwrite epoch. Else we use epoch = self.epoch + 1
-
-        (maybe_update_lr is called in on_epoch_end which is called before epoch is incremented.
-        herefore we need to do +1 here)
-
-        :param epoch:
-        :return:
-        """
         if epoch is None:
             ep = self.epoch + 1
         else:
@@ -165,7 +254,13 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
             with autocast():
                 output = [self.network(data)]
-                l = loss(output[0], target[0])
+                print("sawNewTrainerMultiOpts.py:257")
+                print(output.size())
+                print(target.size())
+                if idx == 0:
+                    l = loss(output[0], target[0])
+                elif idx == 1:
+                    l = loss(output[0], target[0])
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
@@ -300,3 +395,157 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 #    "Patience: %d/%d" % (self.epoch - self.best_epoch_based_on_MA_tr_loss, self.patience))
 
         return continue_training
+
+    @staticmethod
+    def get_moreDA_augmentation_depth_map(dataloader_train, dataloader_val, patch_size,
+                                          params=default_3D_augmentation_params, border_val_seg=-1,
+                                          seeds_train=None, seeds_val=None, order_seg=1, order_data=3,
+                                          deep_supervision_scales=None, soft_ds=False,
+                                          classes=None, pin_memory=True, regions=None,
+                                          use_nondetMultiThreadedAugmenter: bool = False):
+        assert params.get('mirror') is None, "old version of params, use new keyword do_mirror"
+        assert use_nondetMultiThreadedAugmenter is False
+
+        tr_transforms = [DensityMapTransform()]
+
+        if params.get("selected_data_channels") is not None:
+            tr_transforms.append(DataChannelSelectionTransform(params.get("selected_data_channels")))
+
+        if params.get("selected_seg_channels") is not None:
+            tr_transforms.append(SegChannelSelectionTransform(params.get("selected_seg_channels")))
+
+        # don't do color augmentations while in 2d mode with 3d data because the color channel is overloaded!!
+        if params.get("dummy_2D") is not None and params.get("dummy_2D"):
+            ignore_axes = (0,)
+            tr_transforms.append(Convert3DTo2DTransform())
+        else:
+            ignore_axes = None
+
+        tr_transforms.append(SpatialTransform(
+            patch_size, patch_center_dist_from_border=None,
+            do_elastic_deform=params.get("do_elastic"), alpha=params.get("elastic_deform_alpha"),
+            sigma=params.get("elastic_deform_sigma"),
+            do_rotation=params.get("do_rotation"), angle_x=params.get("rotation_x"), angle_y=params.get("rotation_y"),
+            angle_z=params.get("rotation_z"), p_rot_per_axis=params.get("rotation_p_per_axis"),
+            do_scale=params.get("do_scaling"), scale=params.get("scale_range"),
+            border_mode_data=params.get("border_mode_data"), border_cval_data=0, order_data=order_data,
+            border_mode_seg="constant", border_cval_seg=border_val_seg,
+            order_seg=order_seg, random_crop=params.get("random_crop"), p_el_per_sample=params.get("p_eldef"),
+            p_scale_per_sample=params.get("p_scale"), p_rot_per_sample=params.get("p_rot"),
+            independent_scale_for_each_axis=params.get("independent_scale_factor_for_each_axis")
+        ))
+
+        if params.get("dummy_2D"):
+            tr_transforms.append(Convert2DTo3DTransform())
+
+        # we need to put the color augmentations after the dummy 2d part (if applicable). Otherwise the overloaded color
+        # channel gets in the way
+        tr_transforms.append(GaussianNoiseTransform(p_per_sample=0.1))
+        tr_transforms.append(GaussianBlurTransform((0.5, 1.), different_sigma_per_channel=True, p_per_sample=0.2,
+                                                   p_per_channel=0.5))
+        tr_transforms.append(BrightnessMultiplicativeTransform(multiplier_range=(0.75, 1.25), p_per_sample=0.15))
+
+        if params.get("do_additive_brightness"):
+            tr_transforms.append(BrightnessTransform(params.get("additive_brightness_mu"),
+                                                     params.get("additive_brightness_sigma"),
+                                                     True, p_per_sample=params.get("additive_brightness_p_per_sample"),
+                                                     p_per_channel=params.get("additive_brightness_p_per_channel")))
+
+        tr_transforms.append(ContrastAugmentationTransform(p_per_sample=0.15))
+        tr_transforms.append(SimulateLowResolutionTransform(zoom_range=(0.5, 1), per_channel=True,
+                                                            p_per_channel=0.5,
+                                                            order_downsample=0, order_upsample=3, p_per_sample=0.25,
+                                                            ignore_axes=ignore_axes))
+        tr_transforms.append(
+            GammaTransform(params.get("gamma_range"), True, True, retain_stats=params.get("gamma_retain_stats"),
+                           p_per_sample=0.1))  # inverted gamma
+
+        if params.get("do_gamma"):
+            tr_transforms.append(
+                GammaTransform(params.get("gamma_range"), False, True, retain_stats=params.get("gamma_retain_stats"),
+                               p_per_sample=params["p_gamma"]))
+
+        if params.get("do_mirror") or params.get("mirror"):
+            tr_transforms.append(MirrorTransform(params.get("mirror_axes")))
+
+        if params.get("mask_was_used_for_normalization") is not None:
+            mask_was_used_for_normalization = params.get("mask_was_used_for_normalization")
+            tr_transforms.append(MaskTransform(mask_was_used_for_normalization, mask_idx_in_seg=0, set_outside_to=0))
+
+        tr_transforms.append(RemoveLabelTransform(-1, 0))
+
+        if params.get("move_last_seg_chanel_to_data") is not None and params.get("move_last_seg_chanel_to_data"):
+            tr_transforms.append(MoveSegAsOneHotToData(1, params.get("all_segmentation_labels"), 'seg', 'data'))
+            if params.get("cascade_do_cascade_augmentations") is not None and params.get(
+                    "cascade_do_cascade_augmentations"):
+                if params.get("cascade_random_binary_transform_p") > 0:
+                    tr_transforms.append(ApplyRandomBinaryOperatorTransform(
+                        channel_idx=list(range(-len(params.get("all_segmentation_labels")), 0)),
+                        p_per_sample=params.get("cascade_random_binary_transform_p"),
+                        key="data",
+                        strel_size=params.get("cascade_random_binary_transform_size"),
+                        p_per_label=params.get("cascade_random_binary_transform_p_per_label")))
+                if params.get("cascade_remove_conn_comp_p") > 0:
+                    tr_transforms.append(
+                        RemoveRandomConnectedComponentFromOneHotEncodingTransform(
+                            channel_idx=list(range(-len(params.get("all_segmentation_labels")), 0)),
+                            key="data",
+                            p_per_sample=params.get("cascade_remove_conn_comp_p"),
+                            fill_with_other_class_p=params.get("cascade_remove_conn_comp_max_size_percent_threshold"),
+                            dont_do_if_covers_more_than_X_percent=params.get(
+                                "cascade_remove_conn_comp_fill_with_other_class_p")))
+
+        tr_transforms.append(RenameTransform('seg', 'target', True))
+
+        if regions is not None:
+            tr_transforms.append(ConvertSegmentationToRegionsTransform(regions, 'target', 'target'))
+
+        if deep_supervision_scales is not None:
+            if soft_ds:
+                assert classes is not None
+                tr_transforms.append(DownsampleSegForDSTransform3(deep_supervision_scales, 'target', 'target', classes))
+            else:
+                tr_transforms.append(DownsampleSegForDSTransform2(deep_supervision_scales, 0, 0, input_key='target',
+                                                                  output_key='target'))
+
+        tr_transforms.append(NumpyToTensor(['data', 'target'], 'float'))
+        tr_transforms = Compose(tr_transforms)
+
+        batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, params.get('num_threads'),
+                                                      params.get("num_cached_per_thread"),
+                                                      seeds=seeds_train, pin_memory=pin_memory)
+
+        val_transforms = []
+        val_transforms.append(RemoveLabelTransform(-1, 0))
+        if params.get("selected_data_channels") is not None:
+            val_transforms.append(DataChannelSelectionTransform(params.get("selected_data_channels")))
+        if params.get("selected_seg_channels") is not None:
+            val_transforms.append(SegChannelSelectionTransform(params.get("selected_seg_channels")))
+
+        if params.get("move_last_seg_chanel_to_data") is not None and params.get("move_last_seg_chanel_to_data"):
+            val_transforms.append(MoveSegAsOneHotToData(1, params.get("all_segmentation_labels"), 'seg', 'data'))
+
+        val_transforms.append(RenameTransform('seg', 'target', True))
+
+        if regions is not None:
+            val_transforms.append(ConvertSegmentationToRegionsTransform(regions, 'target', 'target'))
+
+        if deep_supervision_scales is not None:
+            if soft_ds:
+                assert classes is not None
+                val_transforms.append(
+                    DownsampleSegForDSTransform3(deep_supervision_scales, 'target', 'target', classes))
+            else:
+                val_transforms.append(DownsampleSegForDSTransform2(deep_supervision_scales, 0, 0, input_key='target',
+                                                                   output_key='target'))
+
+        val_transforms.append(NumpyToTensor(['data', 'target'], 'float'))
+        val_transforms = Compose(val_transforms)
+
+        batchgenerator_val = MultiThreadedAugmenter(dataloader_val, val_transforms,
+                                                    max(params.get('num_threads') // 2, 1),
+                                                    params.get("num_cached_per_thread"),
+                                                    seeds=seeds_val, pin_memory=pin_memory)
+
+        return batchgenerator_train, batchgenerator_val
+
