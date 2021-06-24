@@ -44,10 +44,10 @@ class DensityMapTransform(AbstractTransform):
         #print(data_dict.keys())
         y = data_dict['seg']
         new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
-        #new_y[:, :1] = y
-        #for i in range(y.shape[0]):
-        #    new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
-        #data_dict['seg'] = new_y
+        new_y[:, :1] = y
+        for i in range(y.shape[0]):
+            new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
+        data_dict['seg'] = new_y
         return data_dict
 
 
@@ -256,8 +256,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             with autocast():
                 output = [self.network(data)]
                 print("sawNewTrainerMultiOpts.py:257")
-                print(output.size())
-                print(target.size())
+                #print(output.size()
+                #print(target.size())
                 if idx == 0:
                     l = loss(output[0], target[0])
                 elif idx == 1:
