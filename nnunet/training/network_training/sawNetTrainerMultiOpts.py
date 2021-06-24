@@ -86,6 +86,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         :param force_load_plans:
         :return:
         """
+        print("sawNetTrainerMultiOpts.py:89 initialize")
         if not self.was_initialized:
             maybe_mkdir_p(self.output_folder)
 
@@ -151,6 +152,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.was_initialized = True
 
     def initialize_network(self):
+        print("sawNetTrainerMultiOpts.py:155 inititalize network")
         assert self.threeD is False
         conv_op = nn.Conv2d
         dropout_op = nn.Dropout2d
@@ -224,6 +226,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.print_to_log_file("done, saving took %.2f seconds" % (time() - start_time))
 
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
+        print("sawNetTrainerMultiOpts.py:229 run iteration")
         # with torch.autograd.set_detect_anomaly(True):
         """
         gradient clipping improves training stability
