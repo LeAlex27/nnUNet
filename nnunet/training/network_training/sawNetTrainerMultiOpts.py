@@ -38,9 +38,6 @@ from batchgenerators.transforms.abstract_transforms import AbstractTransform
 
 
 class DensityMapTransform(AbstractTransform):
-    def __init__(self):
-        pass
-
     def __call__(self, **data_dict):
         #print("sawNetTrainerMultiOpts.py:46")
         breakpoint()
