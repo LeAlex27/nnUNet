@@ -42,10 +42,9 @@ class DensityMapTransform(AbstractTransform):
         pass
 
     def __call__(self, **data_dict):
-        y = data_dict['seg']
         print("sawNetTrainerMultiOpts.py:46")
-        print(y.shape)
         breakpoint()
+        y = data_dict['seg']
         new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
         new_y[:, :1] = y
         for i in range(y.shape[0]):
@@ -410,7 +409,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         assert params.get('mirror') is None, "old version of params, use new keyword do_mirror"
         assert use_nondetMultiThreadedAugmenter is False
 
-        tr_transforms = [] # DensityMapTransform()]
+        tr_transforms = [DensityMapTransform()]
 
         if params.get("selected_data_channels") is not None:
             tr_transforms.append(DataChannelSelectionTransform(params.get("selected_data_channels")))
