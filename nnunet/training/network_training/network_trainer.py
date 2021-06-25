@@ -411,7 +411,6 @@ class NetworkTrainer(object):
         pass
 
     def run_training(self):
-        breakpoint()
         _ = self.tr_gen.next()
         _ = self.val_gen.next()
 
