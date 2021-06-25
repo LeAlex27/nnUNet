@@ -44,6 +44,7 @@ class DensityMapTransform(AbstractTransform):
         new_y[:, :1] = y
         # for i in range(y.shape[0]):
         #    new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
+        new_y[0, 1] = CountingDiceLoss.sharpen(y[0, 0])
         data_dict['seg'] = 0.9 * y
         return data_dict
 
