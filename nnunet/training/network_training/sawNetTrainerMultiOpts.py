@@ -39,12 +39,12 @@ from batchgenerators.transforms.abstract_transforms import AbstractTransform
 
 class DensityMapTransform(AbstractTransform):
     def __call__(self, **data_dict):
-        # y = data_dict['seg']
+        y = data_dict['seg']
         # new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
         # new_y[:, :1] = y
         # for i in range(y.shape[0]):
         #    new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
-        # data_dict['seg'] = new_y
+        data_dict['seg'] = 2 * y
         return data_dict
 
 
