@@ -39,9 +39,6 @@ from batchgenerators.transforms.abstract_transforms import AbstractTransform
 
 class DensityMapTransform(AbstractTransform):
     def __call__(self, **data_dict):
-        #print("sawNetTrainerMultiOpts.py:46")
-        breakpoint()
-        #print(data_dict.keys())
         y = data_dict['seg']
         new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
         new_y[:, :1] = y
@@ -512,7 +509,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         tr_transforms.append(NumpyToTensor(['data', 'target'], 'float'))
         tr_transforms = Compose(tr_transforms)
 
-        batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, params.get('num_threads'),
+        batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, 1, # params.get('num_threads'),
                                                       params.get("num_cached_per_thread"),
                                                       seeds=seeds_train, pin_memory=pin_memory)
 
