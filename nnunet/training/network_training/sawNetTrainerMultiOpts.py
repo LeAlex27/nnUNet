@@ -39,12 +39,12 @@ from batchgenerators.transforms.abstract_transforms import AbstractTransform
 
 class DensityMapTransform(AbstractTransform):
     def __call__(self, **data_dict):
-        y = data_dict['seg']
-        new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
-        new_y[:, :1] = y
-        for i in range(y.shape[0]):
-            new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
-        data_dict['seg'] = new_y
+        # y = data_dict['seg']
+        # new_y = np.empty((y.shape[0], y.shape[1] + 1, y.shape[2], y.shape[3]), dtype=y.dtype)
+        # new_y[:, :1] = y
+        # for i in range(y.shape[0]):
+        #    new_y[i, 1] = CountingDiceLoss.sharpen(y[i, 0])
+        # data_dict['seg'] = new_y
         return data_dict
 
 
@@ -81,7 +81,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         :param force_load_plans:
         :return:
         """
-        print("sawNetTrainerMultiOpts.py:89 initialize")
         if not self.was_initialized:
             maybe_mkdir_p(self.output_folder)
 
@@ -147,7 +146,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.was_initialized = True
 
     def initialize_network(self):
-        print("sawNetTrainerMultiOpts.py:155 inititalize network")
         assert self.threeD is False
         conv_op = nn.Conv2d
         dropout_op = nn.Dropout2d
@@ -168,7 +166,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             self.network.cuda()
 
     def initialize_optimizer_and_scheduler(self):
-        print("sawNetTrainerMultiOpts.py:176 inititalize optimizer and scheduler")
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[0]),
                               # CountingDiceLoss(True, False, False, None)))
                               SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})))
@@ -222,7 +219,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.print_to_log_file("done, saving took %.2f seconds" % (time() - start_time))
 
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
-        print("sawNetTrainerMultiOpts.py:230 run iteration")
         # with torch.autograd.set_detect_anomaly(True):
         """
         gradient clipping improves training stability
@@ -252,7 +248,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
             with autocast():
                 output = [self.network(data)]
-                print("sawNewTrainerMultiOpts.py:257")
                 #print(output.size()
                 #print(target.size())
                 if idx == 0:
