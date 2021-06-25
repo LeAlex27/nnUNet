@@ -541,7 +541,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         val_transforms = Compose(val_transforms)
 
         batchgenerator_val = MultiThreadedAugmenter(dataloader_val, val_transforms,
-                                                    max(params.get('num_threads') // 2, 1),
+                                                    1, # max(params.get('num_threads') // 2, 1),
                                                     params.get("num_cached_per_thread"),
                                                     seeds=seeds_val, pin_memory=pin_memory)
 
