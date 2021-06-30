@@ -1,5 +1,6 @@
 import numpy as np
 from nnunet.training.dataloading.dataset_loading import DataLoader2D
+from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
 from batchgenerators.utilities.file_and_folder_operations import *
 
 
@@ -17,10 +18,12 @@ class DMLoader(DataLoader2D):
         for i in self._data.keys():
             print("key:", i)
             print(self._data[i]['data_file'][:-4] + ".npy")
-            self._loaded[i] = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
+            d = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
+            new_shape = (d.shape[0], d.shape[1] + 1, d.shape[2], d.shape[3])
+            self._loaded[i] = d
 
         # todo: compute dmaps
-        print(self._loaded[i].shape)
+        print(self._loaded[i].shape, self._loaded[i].dtype)
 
     def generate_train_batch(self):
         selected_keys = np.random.choice(self.list_of_keys, self.batch_size, True, None)
