@@ -10,9 +10,21 @@ class DMLoader(DataLoader2D):
         super(DMLoader, self).__init__(data, patch_size, final_patch_size, batch_size, oversample_foreground_percent,
                                        memmap_mode, pseudo_3d_slices, pad_mode, pad_kwargs_data, pad_sides)
         # todo cache the images
+        breakpoint()
+        print(self._data.keys())
+        self._loaded = dict()
+
+        for i in self._data.keys():
+            print("key:", i)
+            if not isfile(self._data[i]['data_file'][:-4] + ".npy"):
+                self._loaded[i] = np.load(self._data[i]['data_file'][:-4] + ".npz")['data']
+            else:
+                self._loaded[i] = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
+
+        # todo: compute dmaps
+        print(self._loaded[i].shape)
 
     def generate_train_batch(self):
-        breakpoint()
         selected_keys = np.random.choice(self.list_of_keys, self.batch_size, True, None)
 
         data = np.zeros(self.data_shape, dtype=np.float32)
