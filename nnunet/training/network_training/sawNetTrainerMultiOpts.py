@@ -9,6 +9,7 @@ from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
 from torch.cuda.amp import autocast, GradScaler
 from nnunet.training.loss_functions.counting_dice_loss import CountingDiceLoss
 from nnunet.training.learning_rate.poly_lr import poly_lr
+from nnunet.training.data_augmentation.data_augmentation_moreDA import get_moreDA_augmentation
 import numpy as np
 import pickle
 from collections import OrderedDict
@@ -108,7 +109,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                         "INFO: Not unpacking data! Training may be slow due to that. Pray you are not using 2d or you "
                         "will wait all winter for your model to finish!")
 
-                self.tr_gen, self.val_gen = self.get_moreDA_augmentation_depth_map(
+                self.tr_gen, self.val_gen = get_moreDA_augmentation(
                     self.dl_tr, self.dl_val,
                     self.data_aug_params[
                         'patch_size_for_spatialtransform'],
