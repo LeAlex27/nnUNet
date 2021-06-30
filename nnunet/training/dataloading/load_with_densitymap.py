@@ -12,6 +12,7 @@ class DMLoader(DataLoader2D):
         # todo cache the images
 
     def generate_train_batch(self):
+        breakpoint()
         selected_keys = np.random.choice(self.list_of_keys, self.batch_size, True, None)
 
         data = np.zeros(self.data_shape, dtype=np.float32)
