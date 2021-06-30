@@ -16,10 +16,8 @@ class DMLoader(DataLoader2D):
 
         for i in self._data.keys():
             print("key:", i)
-            if not isfile(self._data[i]['data_file'][:-4] + ".npy"):
-                self._loaded[i] = np.load(self._data[i]['data_file'][:-4] + ".npz")['data']
-            else:
-                self._loaded[i] = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
+            print(self._data[i]['data_file'][:-4] + ".npy")
+            self._loaded[i] = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
 
         # todo: compute dmaps
         print(self._loaded[i].shape)
