@@ -411,7 +411,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         assert params.get('mirror') is None, "old version of params, use new keyword do_mirror"
 
         tr_transforms = []
-        breakpoint()
         if params.get("selected_seg_channels") is not None:
             tr_transforms.append(SegChannelSelectionTransform(params.get("selected_seg_channels")))
 

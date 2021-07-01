@@ -131,14 +131,14 @@ class DMLoader(DataLoader2D):
                             valid_bbox_y_lb:valid_bbox_y_ub]
 
             # assert case_all_data[:2] == 3
-            case_all_data_donly = np.pad(case_all_data[:2], ((0, 0),
-                                                              (-min(0, bbox_x_lb), max(bbox_x_ub - shape[0], 0)),
-                                                              (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
+            case_all_data_donly = np.pad(case_all_data[:1], ((0, 0),
+                                                             (-min(0, bbox_x_lb), max(bbox_x_ub - shape[0], 0)),
+                                                             (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
                                          self.pad_mode, **self.pad_kwargs_data)
 
-            case_all_data_segonly = np.pad(case_all_data[2:], ((0, 0),
-                                                                (-min(0, bbox_x_lb), max(bbox_x_ub - shape[0], 0)),
-                                                                (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
+            case_all_data_segonly = np.pad(case_all_data[1:], ((0, 0),
+                                                               (-min(0, bbox_x_lb), max(bbox_x_ub - shape[0], 0)),
+                                                               (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
                                            'constant', **{'constant_values': -1})
 
             # print("gen train batch")
