@@ -88,6 +88,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             self.process_plans(self.plans)
 
             self.setup_DA_params()
+            self.data_aug_params['selected_seg_channels'] = [0, 2]
 
             ################# Here we wrap the loss for deep supervision ############
             # we need to know the number of outputs of the network
