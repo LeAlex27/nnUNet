@@ -239,6 +239,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         :param run_online_evaluation:
         :return:
         """
+        breakpoint()
         data_dict = next(data_generator)
         data = data_dict['data']
         target = data_dict['target']
