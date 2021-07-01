@@ -130,7 +130,7 @@ class DMLoader(DataLoader2D):
             case_all_data = case_all_data[:, valid_bbox_x_lb:valid_bbox_x_ub,
                             valid_bbox_y_lb:valid_bbox_y_ub]
 
-            assert case_all_data[:2] == 3
+            # assert case_all_data[:2] == 3
             case_all_data_donly = np.pad(case_all_data[:2], ((0, 0),
                                                               (-min(0, bbox_x_lb), max(bbox_x_ub - shape[0], 0)),
                                                               (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
