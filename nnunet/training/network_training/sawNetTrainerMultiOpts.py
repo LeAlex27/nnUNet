@@ -38,6 +38,14 @@ from nnunet.training.data_augmentation.pyramid_augmentations import MoveSegAsOne
 from batchgenerators.dataloading import SingleThreadedAugmenter
 
 
+class STAnext(SingleThreadedAugmenter):
+    def __init__(self, data_loader, transform):
+        super(STAnext, self).__init__(data_loader, transform)
+
+    def next(self):
+        return self.__next__()
+
+
 class sawNetTrainerMultiOpts(nnUNetTrainerV2):
     def __init__(self, plans_file, fold, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
                  unpack_data=True, deterministic=True, fp16=False):
@@ -470,7 +478,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         #batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, params.get('num_threads'),
         #                                              params.get("num_cached_per_thread"),
         #                                              seeds=seeds_train, pin_memory=pin_memory)
-        batchgenerator_train = SingleThreadedAugmenter(dataloader_train, tr_transforms)
+        batchgenerator_train = STAnext(dataloader_train, tr_transforms)
 
         val_transforms = []
         val_transforms.append(RemoveLabelTransform(-1, 0))
@@ -501,6 +509,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         #                                            max(params.get('num_threads') // 2, 1),
         #                                            params.get("num_cached_per_thread"),
         #                                            seeds=seeds_val, pin_memory=pin_memory)
-        batchgenerator_val = SingleThreadedAugmenter(dataloader_val, val_transforms)
+        batchgenerator_val = STAnext(dataloader_val, val_transforms)
 
         return batchgenerator_train, batchgenerator_val
