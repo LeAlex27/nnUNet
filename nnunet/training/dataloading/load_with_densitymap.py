@@ -16,12 +16,13 @@ class DMLoader(DataLoader2D):
         for i in self._data.keys():
             print("key:", i)
             print(self._data[i]['data_file'][:-4] + ".npy")
-            breakpoint()
             d = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
             new_shape = (d.shape[0] + 1, d.shape[1], d.shape[2], d.shape[3])
             d_dm = np.empty(new_shape, d.dtype)
             d_dm[:2] = d
-            d_dm[2, 0] = CountingDiceLoss.sharpen(d_dm[1, 0])
+            breakpoint()
+            d_t = np.where(d_dm[1, 0] < 0, 0, d_dm[1, 0])
+            d_dm[2, 0] = CountingDiceLoss.sharpen(d_t)
             self._loaded[i] = d
 
         print(self._loaded[i].shape, self._loaded[i].dtype)
