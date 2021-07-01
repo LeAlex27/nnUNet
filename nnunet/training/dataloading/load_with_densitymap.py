@@ -10,22 +10,16 @@ class DMLoader(DataLoader2D):
                  pad_kwargs_data=None, pad_sides=None):
         super(DMLoader, self).__init__(data, patch_size, final_patch_size, batch_size, oversample_foreground_percent,
                                        memmap_mode, pseudo_3d_slices, pad_mode, pad_kwargs_data, pad_sides)
-        print(self._data.keys())
         self._loaded = dict()
 
         for i in self._data.keys():
-            print("key:", i)
-            print(self._data[i]['data_file'][:-4] + ".npy")
             d = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
             new_shape = (d.shape[0] + 1, d.shape[1], d.shape[2], d.shape[3])
             d_dm = np.empty(new_shape, d.dtype)
             d_dm[:2] = d
-            breakpoint()
             d_t = np.where(d_dm[1, 0] < 0, 0, d_dm[1, 0])
             d_dm[2, 0] = CountingDiceLoss.sharpen(d_t)
             self._loaded[i] = d
-
-        print(self._loaded[i].shape, self._loaded[i].dtype)
 
     def generate_train_batch(self):
         selected_keys = np.random.choice(self.list_of_keys, self.batch_size, True, None)
@@ -46,11 +40,8 @@ class DMLoader(DataLoader2D):
             else:
                 force_fg = False
 
-            if not isfile(self._data[i]['data_file'][:-4] + ".npy"):
-                # lets hope you know what you're doing
-                case_all_data = np.load(self._data[i]['data_file'][:-4] + ".npz")['data']
-            else:
-                case_all_data = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
+            # case_all_data = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
+            case_all_data = self._loaded[i]
 
             # this is for when there is just a 2d slice in case_all_data (2d support)
             if len(case_all_data.shape) == 3:
@@ -83,6 +74,7 @@ class DMLoader(DataLoader2D):
 
             # now crop case_all_data to contain just the slice of interest. If we want additional slice above and
             # below the current slice, here is where we get them. We stack those as additional color channels
+            assert self.pseudo_3d_slices == 1
             if self.pseudo_3d_slices == 1:
                 case_all_data = case_all_data[:, random_slice]
             else:
