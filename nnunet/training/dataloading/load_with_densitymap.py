@@ -27,6 +27,7 @@ class DMLoader(DataLoader2D):
         data = np.zeros(self.data_shape, dtype=np.float32)
         seg = np.zeros(self.seg_shape, dtype=np.float32)
 
+        breakpoint()
         case_properties = []
         for j, i in enumerate(selected_keys):
             if 'properties' in self._data[i].keys():
