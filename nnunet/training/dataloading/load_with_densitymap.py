@@ -77,29 +77,6 @@ class DMLoader(DataLoader2D):
             assert self.pseudo_3d_slices == 1
             if self.pseudo_3d_slices == 1:
                 case_all_data = case_all_data[:, random_slice]
-            else:
-                # this is very deprecated and will probably not work anymore. If you intend to use this you need to
-                # check this!
-                mn = random_slice - (self.pseudo_3d_slices - 1) // 2
-                mx = random_slice + (self.pseudo_3d_slices - 1) // 2 + 1
-                valid_mn = max(mn, 0)
-                valid_mx = min(mx, case_all_data.shape[1])
-                case_all_seg = case_all_data[-1:]
-                case_all_data = case_all_data[:-1]
-                case_all_data = case_all_data[:, valid_mn:valid_mx]
-                case_all_seg = case_all_seg[:, random_slice]
-                need_to_pad_below = valid_mn - mn
-                need_to_pad_above = mx - valid_mx
-                if need_to_pad_below > 0:
-                    shp_for_pad = np.array(case_all_data.shape)
-                    shp_for_pad[1] = need_to_pad_below
-                    case_all_data = np.concatenate((np.zeros(shp_for_pad), case_all_data), 1)
-                if need_to_pad_above > 0:
-                    shp_for_pad = np.array(case_all_data.shape)
-                    shp_for_pad[1] = need_to_pad_above
-                    case_all_data = np.concatenate((case_all_data, np.zeros(shp_for_pad)), 1)
-                case_all_data = case_all_data.reshape((-1, case_all_data.shape[-2], case_all_data.shape[-1]))
-                case_all_data = np.concatenate((case_all_data, case_all_seg), 0)
 
             # case all data should now be (c, x, y)
             assert len(case_all_data.shape) == 3
@@ -153,12 +130,13 @@ class DMLoader(DataLoader2D):
             case_all_data = case_all_data[:, valid_bbox_x_lb:valid_bbox_x_ub,
                             valid_bbox_y_lb:valid_bbox_y_ub]
 
-            case_all_data_donly = np.pad(case_all_data[:-1], ((0, 0),
+            assert case_all_data[:2] == 3
+            case_all_data_donly = np.pad(case_all_data[:2], ((0, 0),
                                                               (-min(0, bbox_x_lb), max(bbox_x_ub - shape[0], 0)),
                                                               (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
                                          self.pad_mode, **self.pad_kwargs_data)
 
-            case_all_data_segonly = np.pad(case_all_data[-1:], ((0, 0),
+            case_all_data_segonly = np.pad(case_all_data[2:], ((0, 0),
                                                                 (-min(0, bbox_x_lb), max(bbox_x_ub - shape[0], 0)),
                                                                 (-min(0, bbox_y_lb), max(bbox_y_ub - shape[1], 0))),
                                            'constant', **{'constant_values': -1})

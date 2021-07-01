@@ -233,6 +233,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
         for idx, (opt, loss) in enumerate(self.opt_loss):
             opt.zero_grad()
+            breakpoint()
 
             with autocast():
                 output = [self.network(data)]
