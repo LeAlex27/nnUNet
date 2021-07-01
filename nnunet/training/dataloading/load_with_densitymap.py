@@ -21,6 +21,19 @@ class DMLoader(DataLoader2D):
             d_dm[2, 0] = CountingDiceLoss.sharpen(d_t)
             self._loaded[i] = d
 
+    def determine_shapes(self):
+        num_seg = 2
+
+        k = list(self._data.keys())[0]
+        if isfile(self._data[k]['data_file'][:-4] + ".npy"):
+            case_all_data = np.load(self._data[k]['data_file'][:-4] + ".npy", self.memmap_mode)
+        else:
+            case_all_data = np.load(self._data[k]['data_file'])['data']
+        num_color_channels = case_all_data.shape[0] - num_seg
+        data_shape = (self.batch_size, num_color_channels, *self.patch_size)
+        seg_shape = (self.batch_size, num_seg, *self.patch_size)
+        return data_shape, seg_shape
+
     def generate_train_batch(self):
         selected_keys = np.random.choice(self.list_of_keys, self.batch_size, True, None)
 
@@ -128,8 +141,7 @@ class DMLoader(DataLoader2D):
             # be padded with -1 constant whereas seg_from_previous_stage needs to be padded with 0s (we could also
             # remove label -1 in the data augmentation but this way it is less error prone)
 
-            case_all_data = case_all_data[:, valid_bbox_x_lb:valid_bbox_x_ub,
-                            valid_bbox_y_lb:valid_bbox_y_ub]
+            case_all_data = case_all_data[:, valid_bbox_x_lb:valid_bbox_x_ub, valid_bbox_y_lb:valid_bbox_y_ub]
 
             # assert case_all_data[:2] == 3
             case_all_data_donly = np.pad(case_all_data[:1], ((0, 0),
