@@ -10,19 +10,20 @@ class DMLoader(DataLoader2D):
                  pad_kwargs_data=None, pad_sides=None):
         super(DMLoader, self).__init__(data, patch_size, final_patch_size, batch_size, oversample_foreground_percent,
                                        memmap_mode, pseudo_3d_slices, pad_mode, pad_kwargs_data, pad_sides)
-        # todo cache the images
-        breakpoint()
         print(self._data.keys())
         self._loaded = dict()
 
         for i in self._data.keys():
             print("key:", i)
             print(self._data[i]['data_file'][:-4] + ".npy")
+            breakpoint()
             d = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
-            new_shape = (d.shape[0], d.shape[1] + 1, d.shape[2], d.shape[3])
+            new_shape = (d.shape[0] + 1, d.shape[1], d.shape[2], d.shape[3])
+            d_dm = np.empty(new_shape, d.dtype)
+            d_dm[:2] = d
+            d_dm[2, 0] = CountingDiceLoss.sharpen(d_dm[1, 0])
             self._loaded[i] = d
 
-        # todo: compute dmaps
         print(self._loaded[i].shape, self._loaded[i].dtype)
 
     def generate_train_batch(self):
