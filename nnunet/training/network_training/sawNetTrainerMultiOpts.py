@@ -403,18 +403,11 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
         tr_transforms = []
         breakpoint()
-        if params.get("selected_data_channels") is not None:
-            tr_transforms.append(DataChannelSelectionTransform(params.get("selected_data_channels")))
-
         if params.get("selected_seg_channels") is not None:
             tr_transforms.append(SegChannelSelectionTransform(params.get("selected_seg_channels")))
 
         # don't do color augmentations while in 2d mode with 3d data because the color channel is overloaded!!
-        if params.get("dummy_2D") is not None and params.get("dummy_2D"):
-            ignore_axes = (0,)
-            tr_transforms.append(Convert3DTo2DTransform())
-        else:
-            ignore_axes = None
+        ignore_axes = None
 
         tr_transforms.append(SpatialTransform(
             patch_size, patch_center_dist_from_border=None,
@@ -430,21 +423,12 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             independent_scale_for_each_axis=params.get("independent_scale_factor_for_each_axis")
         ))
 
-        if params.get("dummy_2D"):
-            tr_transforms.append(Convert2DTo3DTransform())
-
         # we need to put the color augmentations after the dummy 2d part (if applicable). Otherwise the overloaded color
         # channel gets in the way
         tr_transforms.append(GaussianNoiseTransform(p_per_sample=0.1))
         tr_transforms.append(GaussianBlurTransform((0.5, 1.), different_sigma_per_channel=True, p_per_sample=0.2,
                                                    p_per_channel=0.5))
         tr_transforms.append(BrightnessMultiplicativeTransform(multiplier_range=(0.75, 1.25), p_per_sample=0.15))
-
-        if params.get("do_additive_brightness"):
-            tr_transforms.append(BrightnessTransform(params.get("additive_brightness_mu"),
-                                                     params.get("additive_brightness_sigma"),
-                                                     True, p_per_sample=params.get("additive_brightness_p_per_sample"),
-                                                     p_per_channel=params.get("additive_brightness_p_per_channel")))
 
         tr_transforms.append(ContrastAugmentationTransform(p_per_sample=0.15))
         tr_transforms.append(SimulateLowResolutionTransform(zoom_range=(0.5, 1), per_channel=True,
@@ -469,31 +453,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
         tr_transforms.append(RemoveLabelTransform(-1, 0))
 
-        if params.get("move_last_seg_chanel_to_data") is not None and params.get("move_last_seg_chanel_to_data"):
-            tr_transforms.append(MoveSegAsOneHotToData(1, params.get("all_segmentation_labels"), 'seg', 'data'))
-            if params.get("cascade_do_cascade_augmentations") is not None and params.get(
-                    "cascade_do_cascade_augmentations"):
-                if params.get("cascade_random_binary_transform_p") > 0:
-                    tr_transforms.append(ApplyRandomBinaryOperatorTransform(
-                        channel_idx=list(range(-len(params.get("all_segmentation_labels")), 0)),
-                        p_per_sample=params.get("cascade_random_binary_transform_p"),
-                        key="data",
-                        strel_size=params.get("cascade_random_binary_transform_size"),
-                        p_per_label=params.get("cascade_random_binary_transform_p_per_label")))
-                if params.get("cascade_remove_conn_comp_p") > 0:
-                    tr_transforms.append(
-                        RemoveRandomConnectedComponentFromOneHotEncodingTransform(
-                            channel_idx=list(range(-len(params.get("all_segmentation_labels")), 0)),
-                            key="data",
-                            p_per_sample=params.get("cascade_remove_conn_comp_p"),
-                            fill_with_other_class_p=params.get("cascade_remove_conn_comp_max_size_percent_threshold"),
-                            dont_do_if_covers_more_than_X_percent=params.get(
-                                "cascade_remove_conn_comp_fill_with_other_class_p")))
-
         tr_transforms.append(RenameTransform('seg', 'target', True))
-
-        if regions is not None:
-            tr_transforms.append(ConvertSegmentationToRegionsTransform(regions, 'target', 'target'))
 
         if deep_supervision_scales is not None:
             if soft_ds:
@@ -512,8 +472,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
         val_transforms = []
         val_transforms.append(RemoveLabelTransform(-1, 0))
-        if params.get("selected_data_channels") is not None:
-            val_transforms.append(DataChannelSelectionTransform(params.get("selected_data_channels")))
         if params.get("selected_seg_channels") is not None:
             val_transforms.append(SegChannelSelectionTransform(params.get("selected_seg_channels")))
 
