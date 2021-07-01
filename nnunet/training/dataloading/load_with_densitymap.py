@@ -13,13 +13,13 @@ class DMLoader(DataLoader2D):
         self._loaded = dict()
 
         for i in self._data.keys():
-            d = np.load(self._data[i]['data_file'][:-4] + ".npy", self.memmap_mode)
+            d = np.load(self._data[i]['data_file'][:-4] + ".npy")
             new_shape = (d.shape[0] + 1, d.shape[1], d.shape[2], d.shape[3])
             d_dm = np.empty(new_shape, d.dtype)
             d_dm[:2] = d
             d_t = np.where(d_dm[1, 0] < 0, 0, d_dm[1, 0])
             d_dm[2, 0] = CountingDiceLoss.sharpen(d_t)
-            self._loaded[i] = d
+            self._loaded[i] = d_dm
 
     def determine_shapes(self):
         num_seg = 2
