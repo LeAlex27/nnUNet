@@ -259,8 +259,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
             with autocast():
                 output = [self.network(data)]
-                #print(output.size()
-                #print(target.size())
+                breakpoint()
                 if idx == 0:
                     l = loss(output[0], target[0])
                 elif idx == 1:
