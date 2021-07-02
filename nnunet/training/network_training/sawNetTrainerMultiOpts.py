@@ -248,9 +248,9 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         fig, ax = plt.subplots(2, 4, figsize=(40, 20), tight_layout=True)
         breakpoint()
         for i in range(4):
-            ax[0, i].imshow(target[0][i, 0])
-            ax[1, i].imshow(target[0][i, 1])
-            ax[1, i].set_title(np.sum(target[0][i, 1]))
+            ax[0, i].imshow(target[0][i, 0].detach().cpu().numpy())
+            ax[1, i].imshow(target[0][i, 1].detach().cpu().numpy())
+            ax[1, i].set_title(torch.sum(target[0][i, 1]))
         fig.savefig('/cluster/husvogt/debug_imgs/target.png')
         breakpoint()
 
