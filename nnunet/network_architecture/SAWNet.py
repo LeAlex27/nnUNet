@@ -133,18 +133,18 @@ class SAWNet(Generic_UNet):
             self.apply(self.weightInitializer)
 
     def forward(self, x):
-        if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
-            print("SAWNet.py:137: encountered inf/nan:")
-            print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
+        # if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
+        #    print("SAWNet.py:137: encountered inf/nan:")
+        #    print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
 
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
             x = self.conv_blocks_context[d](x)
-            if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
-                print("SAWNet.py:145: encountered inf/nan in block d: {}:".format(d))
-                print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
-                exit(1)
+            # if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
+            #    print("SAWNet.py:145: encountered inf/nan in block d: {}:".format(d))
+            #    print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
+            #    exit(1)
             skips.append(x)
             if not self.convolutional_pooling:
                 x = self.td[d](x)
@@ -158,9 +158,9 @@ class SAWNet(Generic_UNet):
             # print(x.shape, skips[-(u + 1)].shape)
             x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
-            if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
-                print("SAWNet.py:162: encountered inf/nan:")
-                print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
+            # if torch.sum(torch.isinf(x)) > 0 or torch.sum(torch.isnan(x)) > 0:
+            #    print("SAWNet.py:162: encountered inf/nan:")
+            #    print("x:", x.size(), torch.sum(torch.isinf(x)), torch.sum(torch.isnan(x)))
             # print("SN:144 {}".format(x.shape))
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
