@@ -269,10 +269,9 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             with autocast():
                 output = [self.network(data)]
                 if idx == 0:
-                    l = loss(output[0], target[0][:, :2])
+                    l = loss(output[0][:, :2], target[0][:, :1])
                 elif idx == 1:
-                    breakpoint()
-                    l = loss(output[0], target[0][:, 2:])
+                    l = loss(output[0][:, 2:], target[0][:, 1:])
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
