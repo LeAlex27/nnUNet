@@ -52,7 +52,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainerMultiOpts, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice,
                                                      stage, unpack_data, deterministic, fp16, False)
-        self.max_num_epochs = 2
+        self.max_num_epochs = 100
         self.loss = None
         self.opt_loss = []
 
@@ -180,10 +180,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
     def initialize_optimizer_and_scheduler(self):
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[0]),
-                              # CountingDiceLoss(True, False, False, None)))
                               SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})))
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[1]),
-                              # CountingDiceLoss(False, True, True, None)))
                               torch.nn.MSELoss()))
         # self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
         #                       CountingDiceLoss(False, False, True, None)))
@@ -230,6 +228,19 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
         torch.save(save_this, fname)
         self.print_to_log_file("done, saving took %.2f seconds" % (time() - start_time))
+
+    def load_latest_checkpoint(self, train=True):
+        with open(self.output_folder + '/losses.pickle', 'rb') as f:
+            for i in range(len(self.pickle_losses)):
+                self.pickle_losses[i] = pickle.load(f)
+
+        if isfile(join(self.output_folder, "model_final_checkpoint.model")):
+            return self.load_checkpoint(join(self.output_folder, "model_final_checkpoint.model"), train=train)
+        if isfile(join(self.output_folder, "model_latest.model")):
+            return self.load_checkpoint(join(self.output_folder, "model_latest.model"), train=train)
+        if isfile(join(self.output_folder, "model_best.model")):
+            return self.load_best_checkpoint(train)
+        raise RuntimeError("No checkpoint found")
 
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
         # with torch.autograd.set_detect_anomaly(True):
