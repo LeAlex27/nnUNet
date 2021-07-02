@@ -245,7 +245,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         data = data_dict['data']
         target = data_dict['target']
 
-        fig, ax = plt.subplots(2, 4, figsize=(40, 20), tight_layout=True)
+        #fig, ax = plt.subplots(2, 4, figsize=(40, 20), tight_layout=True)
         # for i in range(4):
         #    ax[0, i].imshow(target[0][i, 0].detach().cpu().numpy())
         #    ax[1, i].imshow(target[0][i, 1].detach().cpu().numpy())
@@ -481,10 +481,10 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         tr_transforms.append(NumpyToTensor(['data', 'target'], 'float'))
         tr_transforms = Compose(tr_transforms)
 
-        #batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, params.get('num_threads'),
-        #                                              params.get("num_cached_per_thread"),
-        #                                              seeds=seeds_train, pin_memory=pin_memory)
-        batchgenerator_train = STAnext(dataloader_train, tr_transforms)
+        batchgenerator_train = MultiThreadedAugmenter(dataloader_train, tr_transforms, params.get('num_threads'),
+                                                      params.get("num_cached_per_thread"),
+                                                      seeds=seeds_train, pin_memory=pin_memory)
+        #batchgenerator_train = STAnext(dataloader_train, tr_transforms)
 
         val_transforms = []
         val_transforms.append(RemoveLabelTransform(-1, 0))
@@ -511,10 +511,10 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         val_transforms.append(NumpyToTensor(['data', 'target'], 'float'))
         val_transforms = Compose(val_transforms)
 
-        # batchgenerator_val = MultiThreadedAugmenter(dataloader_val, val_transforms,
-        #                                            max(params.get('num_threads') // 2, 1),
-        #                                            params.get("num_cached_per_thread"),
-        #                                            seeds=seeds_val, pin_memory=pin_memory)
+        batchgenerator_val = MultiThreadedAugmenter(dataloader_val, val_transforms,
+                                                    max(params.get('num_threads') // 2, 1),
+                                                    params.get("num_cached_per_thread"),
+                                                    seeds=seeds_val, pin_memory=pin_memory)
         batchgenerator_val = STAnext(dataloader_val, val_transforms)
 
         return batchgenerator_train, batchgenerator_val
