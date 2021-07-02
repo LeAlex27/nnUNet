@@ -246,6 +246,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         target = data_dict['target']
 
         fig, ax = plt.subplots(2, 4, figsize=(40, 20), tight_layout=True)
+        breakpoint()
         for i in range(4):
             ax[0, i].imshow(target[0][i, 0])
             ax[1, i].imshow(target[0][i, 1])
