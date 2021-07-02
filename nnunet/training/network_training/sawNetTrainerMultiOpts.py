@@ -244,12 +244,14 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         data_dict = next(data_generator)
         data = data_dict['data']
         target = data_dict['target']
-        breakpoint()
-        fig, ax = plt.subplots(2, 4, figsize=(40, 20))
+
+        fig, ax = plt.subplots(2, 4, figsize=(40, 20), tightlayout=True)
         for i in range(4):
             ax[0, i].imshow(target[0][i, 0])
             ax[1, i].imshow(target[0][i, 1])
+            ax[1, i].set_title(np.sum(target[0][i, 1]))
         fig.savefig('/cluster/husvogt/debug_imgs/target.png')
+        breakpoint()
 
         data = maybe_to_torch(data)
         target = maybe_to_torch(target)
