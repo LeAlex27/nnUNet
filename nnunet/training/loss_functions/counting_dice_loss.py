@@ -125,7 +125,9 @@ class CountingDiceLoss(torch.nn.Module):
                         sum_ += 1.0 / (srpi * s_k) * np.exp(-((i - p_i) ** 2 + (j - p_j) ** 2) / (2.0 * s_k ** 2.0))
                     t[i, j] = sum_
 
-        t /= (np.sum(t)) # / len(props))
+        if np.sum(t) > 1e-8:
+            t /= (np.sum(t))
+            t *= len(props)
 
         return t
 
