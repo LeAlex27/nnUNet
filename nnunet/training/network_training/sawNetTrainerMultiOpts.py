@@ -271,6 +271,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 if idx == 0:
                     l = loss(output[0], target[0][:, :2])
                 elif idx == 1:
+                    breakpoint()
                     l = loss(output[0], target[0][:, 2:])
 
             if do_backprop:
