@@ -36,6 +36,7 @@ from nnunet.training.data_augmentation.pyramid_augmentations import MoveSegAsOne
     ApplyRandomBinaryOperatorTransform, \
     RemoveRandomConnectedComponentFromOneHotEncodingTransform
 from batchgenerators.dataloading import SingleThreadedAugmenter
+import matplotlib.pyplot as plt
 
 
 class STAnext(SingleThreadedAugmenter):
@@ -240,10 +241,15 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         :param run_online_evaluation:
         :return:
         """
-        breakpoint()
         data_dict = next(data_generator)
         data = data_dict['data']
         target = data_dict['target']
+        breakpoint()
+        fig, ax = plt.subplots(2, 4, figsize=(40, 20))
+        for i in range(4):
+            ax[0, i].imshow(target[0][i, 0])
+            ax[1, i].imshow(target[0][i, 1])
+        fig.savefig('/cluster/husvogt/debug_imgs/target.png')
 
         data = maybe_to_torch(data)
         target = maybe_to_torch(target)
@@ -261,7 +267,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
             with autocast():
                 output = [self.network(data)]
-                breakpoint()
                 if idx == 0:
                     l = loss(output[0], target[0])
                 elif idx == 1:
