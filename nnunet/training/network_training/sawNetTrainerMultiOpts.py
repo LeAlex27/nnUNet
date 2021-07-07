@@ -234,13 +234,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
             for i in range(len(self.pickle_losses)):
                 self.pickle_losses[i] = pickle.load(f)
 
-        if isfile(join(self.output_folder, "model_final_checkpoint.model")):
-            return self.load_checkpoint(join(self.output_folder, "model_final_checkpoint.model"), train=train)
-        if isfile(join(self.output_folder, "model_latest.model")):
-            return self.load_checkpoint(join(self.output_folder, "model_latest.model"), train=train)
-        if isfile(join(self.output_folder, "model_best.model")):
-            return self.load_best_checkpoint(train)
-        raise RuntimeError("No checkpoint found")
+        super(sawNetTrainerMultiOpts, self).load_latest_checkpoint(train)
 
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
         # with torch.autograd.set_detect_anomaly(True):
