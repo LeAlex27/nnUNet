@@ -52,12 +52,12 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainerMultiOpts, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice,
                                                      stage, unpack_data, deterministic, fp16, False)
-        self.max_num_epochs = 1000
+        self.max_num_epochs = 100
         self.loss = None
         self.opt_loss = []
 
         self.initial_lr = None
-        self.initial_lrs = [5e-4, 1e-4]
+        self.initial_lrs = [5e-4, 1e-4, 5e-4]
         self.pickle_losses = []
 
         print("sawNetTrainerTwoOpts:")
@@ -183,8 +183,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                               SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})))
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[1]),
                               torch.nn.MSELoss()))
-        # self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
-        #                       CountingDiceLoss(False, False, True, None)))
+        self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
+                              torch.nn.MSELoss()))
         self.pickle_losses = [[] for _ in range(len(self.opt_loss))]
 
     def maybe_update_lr(self, epoch=None):
@@ -277,6 +277,11 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                     l = loss(output[0][:, :2], target[0][:, :1])
                 elif idx == 1:
                     l = loss(output[0][:, 2:], target[0][:, 1:])
+                elif idx == 2:
+                    s_0 = torch.sum(output[0][:, 1:2])
+                    s_1 = torch.sum(target[0][:, 0])
+                    l = loss(s_0, s_1)
+                    print("n_sums:", s_0, s_1)
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
