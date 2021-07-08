@@ -54,6 +54,10 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
         self.pin_memory = True
 
+        print("nnUNetTrainerV2:")
+        print("output folder:", self.output_folder)
+        print("epochs:", self.max_num_epochs)
+
     def initialize(self, training=True, force_load_plans=False):
         """
         - replaced get_default_augmentation with get_moreDA_augmentation
