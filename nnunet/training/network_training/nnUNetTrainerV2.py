@@ -50,6 +50,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
         self.deep_supervision = deep_supervision
+        self.pickle_losses = {'l_': [], 'ds': self.deep_supervision}
 
         self.pin_memory = True
 
@@ -279,6 +280,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
             self.run_online_evaluation(output, target)
 
         del target
+        self.pickle_losses['l_'].append(l.detach().cpu().numpy())
 
         return l.detach().cpu().numpy()
 
@@ -346,6 +348,14 @@ class nnUNetTrainerV2(nnUNetTrainer):
         self.dataset_val = OrderedDict()
         for i in val_keys:
             self.dataset_val[i] = self.dataset[i]
+
+    def save_checkpoint(self, fname, save_optimizer=True):
+        super(nnUNetTrainerV2, self).save_checkpoint(fname, save_optimizer)
+        write_pickle(self.pickle_losses, self.output_folder + '/losses.pickle')
+
+    def load_latest_checkpoint(self, train=True):
+        super(nnUNetTrainerV2, self).load_latest_checkpoint(train)
+        self.pickle_losses = load_pickle(self.output_folder + '/losses.pickle')
 
     def setup_DA_params(self):
         """
