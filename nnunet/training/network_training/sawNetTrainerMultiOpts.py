@@ -278,10 +278,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 elif idx == 1:
                     l = loss(output[0][:, 2:], target[0][:, 1:])
                 elif idx == 2:
-                    s_0 = torch.sum(output[0][:, 1:2])
-                    s_1 = torch.sum(target[0][:, 0])
-                    l = loss(s_0, s_1)
-                    print("n_sums:", s_0, s_1)
+                    l = loss(torch.sum(output[0][:, 1:2]), torch.sum(target[0][:, 0]))
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
