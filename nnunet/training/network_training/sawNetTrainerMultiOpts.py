@@ -52,7 +52,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainerMultiOpts, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice,
                                                      stage, unpack_data, deterministic, fp16, False)
-        self.max_num_epochs = 2
+        self.max_num_epochs = 1000
         self.loss = None
         self.opt_loss = []
 
@@ -265,7 +265,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 elif idx == 1:
                     l = loss(output[0][:, 2:], target[0][:, 1:])
                 elif idx == 2:
-                    l = loss(torch.sum(output[0][:, 1:2]), torch.sum(target[0][:, 0]))
+                    l = loss(torch.sum(output[0][:, 2]), torch.sum(target[0][:, 1]))
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
