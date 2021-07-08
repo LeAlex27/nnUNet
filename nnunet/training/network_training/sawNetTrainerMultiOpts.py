@@ -58,17 +58,11 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
 
         self.initial_lr = None
         self.initial_lrs = [5e-4, 1e-4, 5e-4]
-        self.pickle_losses = []
+        self.pickle_losses = {'l_': [], 'l_dm': [], 'l_n': []}
 
         print("sawNetTrainerTwoOpts:")
         print("output folder:", self.output_folder)
         print("epochs:", self.max_num_epochs)
-
-    def __del__(self):
-        if self.output_folder is not None:
-            with open(self.output_folder + '/losses.pickle', 'wb') as f:
-                for i in range(len(self.pickle_losses)):
-                    pickle.dump(self.pickle_losses[i], f)
 
     def initialize(self, training=True, force_load_plans=False):
         """
@@ -185,7 +179,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                               torch.nn.MSELoss()))
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
                               torch.nn.MSELoss()))
-        self.pickle_losses = [[] for _ in range(len(self.opt_loss))]
 
     def maybe_update_lr(self, epoch=None):
         if epoch is None:
@@ -226,15 +219,9 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         if self.amp_grad_scaler is not None:
             save_this['amp_grad_scaler'] = self.amp_grad_scaler.state_dict()
 
+        write_pickle(self.pickle_losses, self.output_folder + '/losses.pickle')
         torch.save(save_this, fname)
         self.print_to_log_file("done, saving took %.2f seconds" % (time() - start_time))
-
-    def load_latest_checkpoint(self, train=True):
-        with open(self.output_folder + '/losses.pickle', 'rb') as f:
-            for i in range(len(self.pickle_losses)):
-                self.pickle_losses[i] = pickle.load(f)
-
-        super(sawNetTrainerMultiOpts, self).load_latest_checkpoint(train)
 
     def run_iteration(self, data_generator, do_backprop=True, run_online_evaluation=False):
         # with torch.autograd.set_detect_anomaly(True):
@@ -287,7 +274,12 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 self.amp_grad_scaler.step(opt)
                 self.amp_grad_scaler.update()
 
-            self.pickle_losses[idx].append(l.detach().cpu().numpy())
+            if idx == 0:
+                self.pickle_losses['l_'].append(l.detach().cpu().numpy())
+            elif idx == 1:
+                self.pickle_losses['l_dm'].append(l.detach().cpu().numpy())
+            elif idx == 2:
+                self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
         del data
 
         if run_online_evaluation:
