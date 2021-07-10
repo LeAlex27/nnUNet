@@ -57,7 +57,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.opt_loss = []
 
         self.initial_lr = None
-        self.initial_lrs = [5e-4, 1e-4, 5e-4]
+        self.initial_lrs = [5e-4, 1e-4, 1e-3]
         self.pickle_losses = {'l_': [], 'l_dm': [], 'l_n': []}
 
         print("sawNetTrainerTwoOpts:")
@@ -262,10 +262,15 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 output = [self.network(data)]
                 if idx == 0:
                     l = loss(output[0][:, :2], target[0][:, :1])
+                    self.pickle_losses['l_'].append(l.detach().cpu().numpy())
                 elif idx == 1:
                     l = loss(output[0][:, 2:], target[0][:, 1:])
+                    self.pickle_losses['l_dm'].append(l.detach().cpu().numpy())
                 elif idx == 2:
                     l = loss(torch.sum(output[0][:, 2]), torch.sum(target[0][:, 1]))
+                    self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
+                    if self.epoch < 200:
+                        continue
 
             if do_backprop:
                 self.amp_grad_scaler.scale(l).backward()
@@ -274,12 +279,6 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 self.amp_grad_scaler.step(opt)
                 self.amp_grad_scaler.update()
 
-            if idx == 0:
-                self.pickle_losses['l_'].append(l.detach().cpu().numpy())
-            elif idx == 1:
-                self.pickle_losses['l_dm'].append(l.detach().cpu().numpy())
-            elif idx == 2:
-                self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
         del data
 
         if run_online_evaluation:
