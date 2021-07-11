@@ -57,7 +57,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
         self.opt_loss = []
 
         self.initial_lr = None
-        self.initial_lrs = [5e-4, 1e-4, 1e-4]
+        self.initial_lrs = [5e-4, 1e-4, 1e-5]
         self.pickle_losses = {'l_': [], 'l_dm': [], 'l_n': []}
 
         print("sawNetTrainerTwoOpts:")
