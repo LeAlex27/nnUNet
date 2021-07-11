@@ -267,6 +267,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                     l = loss(output[0][:, 2:], target[0][:, 1:])
                     self.pickle_losses['l_dm'].append(l.detach().cpu().numpy())
                 elif idx == 2:
+                    breakpoint()
                     l = loss(torch.sum(output[0][:, 2]), torch.sum(target[0][:, 1]))
                     self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
                     if self.epoch < 200:
