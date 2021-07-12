@@ -271,7 +271,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                     for b in range(self.batch_size):
                         sum_p = torch.sum(output[0][b, 2])
                         sum_t = torch.sum(target[0][b, 1])
-                        l += 1e-5 * torch.square(sum_t - sum_p)
+                        l += 1e-4 * torch.square(sum_t - sum_p)
                         self.pickle_losses['sums'].append((sum_p.detach().cpu().numpy(),
                                                            sum_t.detach().cpu().numpy()))
                     self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
