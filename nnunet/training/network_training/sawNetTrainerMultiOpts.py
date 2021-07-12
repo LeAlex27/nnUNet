@@ -52,13 +52,13 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainerMultiOpts, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice,
                                                      stage, unpack_data, deterministic, fp16, False)
-        self.max_num_epochs = 10
+        self.max_num_epochs = 3
         self.loss = None
         self.opt_loss = []
 
         self.initial_lr = None
         self.initial_lrs = [5e-4, 1e-4, 1e-5]
-        self.pickle_losses = {'l_': [], 'l_dm': [], 'l_n': []}
+        self.pickle_losses = {'l_': [], 'l_dm': [], 'l_n': [], 'sums': []}
 
         print("sawNetTrainerTwoOpts:")
         print("output folder:", self.output_folder)
@@ -272,6 +272,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                         sum_p = torch.sum(output[0][b, 2])
                         sum_t = torch.sum(target[0][b, 1])
                         l += torch.square(sum_t - sum_p)
+                        self.pickle_losses['sums'].append((sum_p, sum_t))
                     self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
                     # if self.epoch < 200:
                     #    continue
