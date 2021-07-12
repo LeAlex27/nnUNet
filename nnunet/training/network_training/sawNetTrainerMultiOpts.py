@@ -272,7 +272,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                         sum_p = torch.sum(output[0][b, 2])
                         sum_t = torch.sum(target[0][b, 1])
                         l += torch.square(sum_t - sum_p)
-                        self.pickle_losses['sums'].append((sum_p, sum_t))
+                        self.pickle_losses['sums'].append((sum_p.detach().cpu().numpy(),
+                                                           sum_t.detach().cpu().numpy()))
                     self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
                     # if self.epoch < 200:
                     #    continue
