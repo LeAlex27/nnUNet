@@ -56,7 +56,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
         print("nnUNetTrainerV2:")
         print("output folder:", self.output_folder)
-        print("epochs:", self.max_num_epochs)
+        # print("epochs:", self.max_num_epochs)
 
     def initialize(self, training=True, force_load_plans=False):
         """
