@@ -52,7 +52,7 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                  unpack_data=True, deterministic=True, fp16=False):
         super(sawNetTrainerMultiOpts, self).__init__(plans_file, fold, output_folder, dataset_directory, batch_dice,
                                                      stage, unpack_data, deterministic, fp16, False)
-        self.max_num_epochs = 100
+        self.max_num_epochs = 1000
         self.loss = None
         self.opt_loss = []
 
@@ -177,8 +177,8 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                               SoftDiceLoss(softmax_helper, **{'batch_dice': False, 'smooth': 1e-5, 'do_bg': False})))
         self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[1]),
                               torch.nn.MSELoss()))
-        self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
-                              torch.nn.MSELoss()))
+        # self.opt_loss.append((torch.optim.Adam(self.network.parameters(), self.initial_lrs[2]),
+        #                      torch.nn.MSELoss()))
 
     def maybe_update_lr(self, epoch=None):
         if epoch is None:
@@ -266,12 +266,18 @@ class sawNetTrainerMultiOpts(nnUNetTrainerV2):
                 elif idx == 1:
                     l = loss(output[0][:, 2:], target[0][:, 1:])
                     self.pickle_losses['l_dm'].append(l.detach().cpu().numpy())
+
+                    for b in range(self.batch_size):
+                        sum_p = torch.sum(output[0][b, 2])
+                        sum_t = torch.sum(target[0][b, 1])
+                        self.pickle_losses['sums_dm'].append((sum_p.detach().cpu().numpy(),
+                                                              sum_t.detach().cpu().numpy()))
                 elif idx == 2:
                     l = torch.Tensor([0.0]).cuda()
                     for b in range(self.batch_size):
                         sum_p = torch.sum(output[0][b, 2])
                         sum_t = torch.sum(target[0][b, 1])
-                        l += 1e-3 * torch.square(sum_t - sum_p)
+                        l += torch.square(sum_t - sum_p)
                         self.pickle_losses['sums'].append((sum_p.detach().cpu().numpy(),
                                                            sum_t.detach().cpu().numpy()))
                     self.pickle_losses['l_n'].append(l.detach().cpu().numpy())
